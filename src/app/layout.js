@@ -26,7 +26,9 @@ export default function RootLayout({ children, meta }) {
       >
         <ReduxProvider>
           <Header />
-          {children}
+          <div className='h-screen mt-6'>
+            {children}
+          </div>
         </ReduxProvider>
       </body>
     </html>

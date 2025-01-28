@@ -602,13 +602,9 @@ export default function CustomTable() {
       wrapper: ["max-h-[382px]", "max-w-3xl"],
       th: ["bg-slate-100", "text-default-700", "border-b", "border-divider", "text-md", "p-3"],
       td: ["p-3", "border-b-1",
-        // changing the rows border radius
-        // first
         "group-data-[first=true]/tr:first:before:rounded-none",
         "group-data-[first=true]/tr:last:before:rounded-none",
-        // middle
         "group-data-[middle=true]/tr:before:rounded-none",
-        // last
         "group-data-[last=true]/tr:first:before:rounded-none",
         "group-data-[last=true]/tr:last:before:rounded-none",
       ],
