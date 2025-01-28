@@ -1,5 +1,6 @@
 import BlogTable from '@/wsui/Blog/Tables/BlogTable'
 import PageTitle from '@/wsui/Common/PageTitle'
+import SampleTable from '@/wsui/Common/Table/SampleTable'
 import { Button } from '@nextui-org/react'
 import React from 'react'
 
@@ -16,6 +17,7 @@ export default function page() {
                   </div>
                   <div>Blog Card</div>
                   <div className="container p-0 mt-5 mb-5">
+                        {/* <SampleTable /> */}
                         <BlogTable />
                   </div>
 

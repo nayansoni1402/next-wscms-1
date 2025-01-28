@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
       Table,
       TableHeader,
@@ -7,109 +7,132 @@ import {
       TableBody,
       TableRow,
       TableCell,
-      getKeyValue,
       Spinner,
 } from "@heroui/react";
 import { useAsyncList } from "@react-stately/data";
-import { Pagination } from '@nextui-org/pagination';
+import BottomContent from '@/wsui/Common/Table/BottomContent';
+import { RenderCell } from '@/wsui/Common/Table/RenderCell';
+import { formatColumnName } from '@/lib/utils';
+import { getCookie } from '@/lib/cookies';
+
+
+export const columns = [
+      { name: "ID", uid: "id", sortable: false },
+      { name: "Image", uid: "image" },
+      { name: "Title", uid: "title", sortable: true },
+      { name: "Status", uid: "status", sortable: true },
+      { name: "Added Date", uid: "added_date", sortable: true },
+      { name: "Http Status", uid: "httpstatus", sortable: true },
+      { name: "Actions", uid: "actions" },
+];
+
+
 export default function BlogTable() {
-      const [isLoading, setIsLoading] = React.useState(true);
       const [selectedKeys, setSelectedKeys] = useState(new Set([]))
-      const [page, setPage] = useState(1)
+      const [page, setPage] = useState(1);
+
       const rowsPerPage = 3
 
 
-      let list = useAsyncList({
+      const list = useAsyncList({
             async load({ signal }) {
-                  let res = await fetch("https://swapi.py4e.com/api/people/?search", {
-                        signal,
-                  });
-                  let json = await res.json();
+                  try {
+                        const res = await fetch("http://localhost:3000/api/v1/blog/blog-list", { signal });
 
-                  setIsLoading(false);
+                        if (!res.ok) {
+                              throw new Error(`HTTP error! Status: ${res.status}`);
+                        }
 
-                  return {
-                        items: json.results,
-                  };
-            },
-            async sort({ items, sortDescriptor }) {
-                  return {
-                        items: items.sort((a, b) => {
-                              let first = a[sortDescriptor.column];
-                              let second = b[sortDescriptor.column];
-                              let cmp = (parseInt(first) || first) < (parseInt(second) || second) ? -1 : 1;
+                        const json = await res.json();
+                        if (!Array.isArray(json.results)) {
+                              throw new Error("Unexpected data format: 'results' is not an array.");
+                        }
 
-                              if (sortDescriptor.direction === "descending") {
-                                    cmp *= -1;
-                              }
-
-                              return cmp;
-                        }),
-                  };
+                        return {
+                              items: json.results,
+                        };
+                  } catch (error) {
+                        console.error("Error loading data:", error);
+                        return {
+                              items: [],
+                        };
+                  }
             },
       });
+      console.log(list.items);
       const pages = Math.ceil(list.items.length / rowsPerPage)
-      const items = list.items.slice((page - 1) * rowsPerPage, page * rowsPerPage)
+      const items = list.items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+      const tableName = "blog";
+      const [visibleColumns, setVisibleColumns] = useState(new Set());
+
+      // const columns = useMemo(() => {
+      //       if (!datas || datas.length === 0) return [];
+      //       const baseColumns = Object.keys(datas[0]);
+      //       return [...baseColumns, "actions"];
+      // }, [datas]);
+
+      useEffect(() => {
+            const cookieData = getCookie("visible_columns");
+            if (tableName && cookieData && cookieData[tableName]) {
+                  setVisibleColumns(new Set(cookieData[tableName]));
+            } else {
+                  // Default visible columns
+                  const defaultColumns = new Set(columns.slice(0, 5));
+                  defaultColumns.add("actions");
+                  setVisibleColumns(defaultColumns);
+            }
+      }, [tableName, columns]);
+
+
+      const headerColumns = useMemo(() => {
+            const visible = [...columns.filter((col) => visibleColumns.has(col))];
+            if (visibleColumns.has("actions") && !visible.includes("actions")) {
+                  visible.push("actions");
+            }
+            return visible;
+      }, [columns, visibleColumns]);
       return (
 
             <>
-                  <Table
-                        aria-label="Example table with client side sorting"
+                  {/* <TopContent /> */}
+                  <Table aria-label="Example table with client side sorting"
                         classNames={{
                               table: "min-h-[400px]",
                         }}
                         sortDescriptor={items.sortDescriptor}
                         onSortChange={items.sort}
-                  >
-                        <TableHeader>
-                              <TableColumn key="name" allowsSorting>
-                                    Name
-                              </TableColumn>
-                              <TableColumn key="height" allowsSorting>
-                                    Height
-                              </TableColumn>
-                              <TableColumn key="mass" allowsSorting>
-                                    Mass
-                              </TableColumn>
-                              <TableColumn key="birth_year" allowsSorting>
-                                    Birth year
-                              </TableColumn>
+                        onSelectionChange={setSelectedKeys}
+                        selectedKeys={selectedKeys}
+                        selectionMode="multiple">
+                        <TableHeader columns={headerColumns}>
+                              {headerColumns.map((column) => (
+                                    <TableColumn
+                                          key={column}
+                                          allowsSorting={column !== "actions"}
+                                          align={column === "actions" ? "center" : "start"}
+                                    >
+                                          {formatColumnName(column)}
+                                    </TableColumn>
+                              ))}
                         </TableHeader>
                         <TableBody
-                              isLoading={isLoading}
+                              isLoading={list.isLoading}
                               items={items}
+                              emptyContent="No data found"
                               loadingContent={<Spinner label="Loading..." />}
                         >
-                              {(item) => (
-                                    <TableRow key={item.name}>
-                                          {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
+                              {(item, rowIndex) => (
+                                    <TableRow key={`${item.id}-${rowIndex}`}>
+                                          {(columnKey) => (
+                                                <TableCell key={`${rowIndex}-${columnKey}`}>
+                                                      {RenderCell({ item, columnKey })}
+                                                </TableCell>
+                                          )}
                                     </TableRow>
                               )}
                         </TableBody>
                   </Table>
-                  <div className="flex justify-start mt-6">
-                        <Pagination
-                              total={pages}
-                              page={page}
-                              onChange={setPage}
-                              showShadow
-                              isCompact showControls
-                              classNames={{
-                                    wrapper: "gap-0",
-                                    item: [
-                                          "w-10 h-10",
-                                          "text-sm font-medium",
-                                          "bg-white",
-                                          "border-r border-divider",
-                                          "last:border-r-0",
-                                          "hover:bg-gray-50",
-                                          "data-[active=true]:text-white",
-                                          "data-[active=true]",
-                                    ].join(" "),
-                                    cursor: "bg-[#E67E22]",
-                              }}
-                        />
-                  </div>
+                  <BottomContent pages={pages} page={page} setPage={setPage} selectedKeys={selectedKeys} items={items} />
             </>
       )
 }
