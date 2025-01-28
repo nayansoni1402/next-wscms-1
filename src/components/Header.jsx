@@ -14,7 +14,9 @@ import {
   Dropdown,
   DropdownMenu,
 } from "@nextui-org/react";
+import { usePathname } from "next/navigation";
 import React from "react";
+import ActiveUser from "./common/ActiveUser";
 
 export const ChevronDown = ({ fill, size, height, width, ...props }) => {
   return (
@@ -263,6 +265,8 @@ export default function Header() {
     user: <TagUser className="text-danger" fill="currentColor" size={30} />,
   };
 
+  const path = usePathname();
+  const isBlog = path.includes('/blog');
   return (
 
     <Navbar className="bg-white" onMenuOpenChange={setIsMenuOpen}>
@@ -283,7 +287,30 @@ export default function Header() {
           </Link>
         </NavbarBrand>
       </NavbarContent>
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
+      {isBlog ? (<NavbarContent className="hidden sm:flex gap-4" justify="center">
+
+
+        {/* menu 1 */}
+        <NavbarItem className="hidden lg:flex">
+          <Link href="#">Dashboard</Link>
+        </NavbarItem>
+        <NavbarItem className="hidden lg:flex">
+          <Link href="#">Blog List</Link>
+        </NavbarItem>
+        <NavbarItem className="hidden lg:flex">
+          <Link href="#">Category</Link>
+        </NavbarItem>
+        <NavbarItem className="hidden lg:flex">
+          <Link href="#">Comment</Link>
+        </NavbarItem>
+        <NavbarItem className="hidden lg:flex">
+          <Link href="#">Logs</Link>
+        </NavbarItem>
+
+        <ActiveUser />
+      </NavbarContent>) : (<NavbarContent className="hidden sm:flex gap-4" justify="center">
+
+
         {/* menu 1 */}
         <NavbarItem>
           <Dropdown>
@@ -393,17 +420,17 @@ export default function Header() {
             </DropdownMenu>
           </Dropdown>
         </NavbarItem>
-      </NavbarContent>
+      </NavbarContent>)}
 
 
       {/* Navbar menus End */}
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="#">Login</Link>
-        </NavbarItem>
+        {/* <NavbarItem className="hidden lg:flex">
+          <Link href="#">Logout</Link>
+        </NavbarItem> */}
         <NavbarItem>
           <Button as={Link} color="primary" href="#" variant="flat">
-            Sign Up
+            Logout
           </Button>
         </NavbarItem>
       </NavbarContent>

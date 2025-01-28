@@ -3,7 +3,7 @@ import "./globals.css";
 import '../styles/scss/common.scss';
 import '../styles/scss/font.scss';
 import { ReduxProvider } from "@/redux/provider";
-import Header from "@/components/Header";
+import Header from "@/wsui/Header/Header";
 
 export const viewport = {
   width: "device-width",
