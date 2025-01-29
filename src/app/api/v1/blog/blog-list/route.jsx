@@ -100,7 +100,7 @@ export async function GET(request) {
                   totalPages,
             };
 
-            return NextResponse.json({ results: response });
+            return NextResponse.json(response);
       } catch (error) {
             console.error("Error fetching vendor details:", error);
             return NextResponse.json(
