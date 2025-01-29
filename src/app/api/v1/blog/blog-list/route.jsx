@@ -60,7 +60,7 @@ export async function GET(request) {
             let data = [
                   {
                         "id": "7",
-                        "postby": "Ravi Sharma",
+                        "name": "Ravi Sharma",
                         "txttitle": "7+ Home DÃ©cor Ideas to Decorate Small Spaces Creatively",
                         "status": "active",
                         "img": "1603866530banner (1).jpg"
@@ -223,7 +223,7 @@ export async function GET(request) {
                   { name: "TEAM", uid: "team" },
                   { name: "EMAIL", uid: "email" },
                   { name: "STATUS", uid: "status", sortable: true },
-                  // { name: "ACTIONS", uid: "actions" },
+                  { name: "ACTIONS", uid: "actions" },
             ]
 
             const response = {

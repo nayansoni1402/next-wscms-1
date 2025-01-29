@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react'
-import { columns, statusOptions } from './TableData'
 import { Input } from '@nextui-org/input'
-import { ChevronDownIcon, SearchIcon } from '../WsSvg'
+import { ChevronDownIcon, PlusIcon, SearchIcon } from '../WsSvg'
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react'
+import { capitalize } from '@/lib/utils'
+import { statusOptions } from './commanData'
 
-export default function TopContent({ onRowsPerPageChange, onClear, onSearchChange, statusFilter }) {
+export default function TopContent({ filterValue, onRowsPerPageChange, onClear, onSearchChange, statusFilter, setStatusFilter, visibleColumns, setVisibleColumns, itemsList, columns }) {
 
       return (
             <div className="flex flex-col gap-4">
@@ -11,7 +13,7 @@ export default function TopContent({ onRowsPerPageChange, onClear, onSearchChang
                         <Input
                               isClearable
                               className="w-full sm:max-w-[44%]"
-                              placeholder="Search by name..."
+                              placeholder="Search by UID or Title..."
                               startContent={<SearchIcon />}
                               value={filterValue}
                               onClear={() => onClear()}
@@ -66,7 +68,7 @@ export default function TopContent({ onRowsPerPageChange, onClear, onSearchChang
                         </div>
                   </div>
                   <div className="flex justify-between items-center">
-                        <span className="text-default-400 text-small">Total {users.length} users</span>
+                        <span className="text-default-400 text-small">Total {itemsList.length} Data</span>
                         <label className="flex items-center text-default-400 text-small">
                               Rows per page:
                               <select
