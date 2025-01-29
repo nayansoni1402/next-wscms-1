@@ -1,17 +1,15 @@
 // npx prisma generate --schema=prisma/schema.blog.prisma
 // npx prisma db push --schema=prisma/schema.blog.prisma
 // npx prisma db pull --schema=prisma/schema.blog.prisma
+import { blogDb } from "@/lib/prismaClients";
 import { NextResponse } from "next/server";
 // import { VendorDetailSchema } from "@/lib/schema/vendorDetailSchema";
 // import { z } from "zod";
-import { prisma1, prisma2, prisma3 } from '@/lib/prismaClients';
 
 
 export async function GET(request) {
       try {
-            const users = await prisma1.user.findMany();
-            const posts = await prisma2.post.findMany();
-            const orders = await prisma3.order.findMany();
+            const users = await blogDb.Blog
 
             res.json({
                   users,
