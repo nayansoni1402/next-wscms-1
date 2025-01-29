@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request) {
       try {
-            const users = await blogDb.Blog
+            const users = await blogDb.Blog.findMa;
 
             res.json({
                   users,
