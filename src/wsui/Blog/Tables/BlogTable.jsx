@@ -1,5 +1,5 @@
 'use client';
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
       Table,
       TableHeader,
@@ -18,6 +18,12 @@ import {
       Pagination,
 } from "@heroui/react";
 import { Spinner } from "@nextui-org/react";
+import { useAsyncList } from "@react-stately/data";
+import AlertWithAction from "@/wsui/Common/Alert/AlertWithAction";
+import { statusOptions } from "@/wsui/Common/Table/commanData";
+import TableCellCustom from "@/wsui/Common/Table/TableCellCustom";
+import { ChevronDownIcon, PlusIcon, SearchIcon } from "@/wsui/Common/WsSvg";
+import BottomContent from "@/wsui/Common/Table/BottomContent";
 
 export const columns = [
       { name: "ID", uid: "id", sortable: true },
@@ -30,11 +36,6 @@ export const columns = [
       { name: "ACTIONS", uid: "actions" },
 ];
 
-export const statusOptions = [
-      { name: "Active", uid: "active" },
-      { name: "Paused", uid: "paused" },
-      { name: "Vacation", uid: "vacation" },
-];
 
 export const users = [
       {
@@ -243,125 +244,54 @@ export function capitalize(s) {
       return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
 
-export const PlusIcon = ({ size = 24, width, height, ...props }) => {
-      return (
-            <svg
-                  aria-hidden="true"
-                  fill="none"
-                  focusable="false"
-                  height={size || height}
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                  width={size || width}
-                  {...props}
-            >
-                  <g
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                  >
-                        <path d="M6 12h12" />
-                        <path d="M12 18V6" />
-                  </g>
-            </svg>
-      );
-};
 
-export const VerticalDotsIcon = ({ size = 24, width, height, ...props }) => {
-      return (
-            <svg
-                  aria-hidden="true"
-                  fill="none"
-                  focusable="false"
-                  height={size || height}
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                  width={size || width}
-                  {...props}
-            >
-                  <path
-                        d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                        fill="currentColor"
-                  />
-            </svg>
-      );
-};
 
-export const SearchIcon = (props) => {
-      return (
-            <svg
-                  aria-hidden="true"
-                  fill="none"
-                  focusable="false"
-                  height="1em"
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                  width="1em"
-                  {...props}
-            >
-                  <path
-                        d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                  />
-                  <path
-                        d="M22 22L20 20"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                  />
-            </svg>
-      );
-};
 
-export const ChevronDownIcon = ({ strokeWidth = 1.5, ...otherProps }) => {
-      return (
-            <svg
-                  aria-hidden="true"
-                  fill="none"
-                  focusable="false"
-                  height="1em"
-                  role="presentation"
-                  viewBox="0 0 24 24"
-                  width="1em"
-                  {...otherProps}
-            >
-                  <path
-                        d="m19.92 8.95-6.52 6.52c-.77.77-2.03.77-2.8 0L4.08 8.95"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeMiterlimit={10}
-                        strokeWidth={strokeWidth}
-                  />
-            </svg>
-      );
-};
 
-const statusColorMap = {
-      active: "success",
-      paused: "danger",
-      vacation: "warning",
-};
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "role", "status", "actions"];
 
 export default function BlogTable() {
-      const [filterValue, setFilterValue] = React.useState("");
-      const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-      const [visibleColumns, setVisibleColumns] = React.useState(new Set(INITIAL_VISIBLE_COLUMNS));
-      const [statusFilter, setStatusFilter] = React.useState("all");
-      const [rowsPerPage, setRowsPerPage] = React.useState(5);
-      const [sortDescriptor, setSortDescriptor] = React.useState({
+      const [filterValue, setFilterValue] = useState("");
+      const [selectedKeys, setSelectedKeys] = useState(new Set([]));
+      const [visibleColumns, setVisibleColumns] = useState(new Set());
+      const [firstItem, setFirstItem] = useState([]);
+      const list = useAsyncList({
+            async load({ signal }) {
+                  try {
+                        const res = await fetch("http://localhost:3000/api/v1/blog/blog-list", { signal });
+
+                        if (!res.ok) {
+                              throw new Error(`HTTP error! Status: ${res.status}`);
+                        }
+
+                        const json = await res.json();
+                        return { items: json };
+                  } catch (error) {
+                        console.error("Error loading data:", error);
+                        return { items: [] };
+                  }
+            },
+      });
+      // Effect hook to log items
+      useEffect(() => {
+            if (list?.items?.length > 0) {
+                  setFirstItem(list.items[0]);
+            }
+      }, [list.items]);
+
+
+      useEffect(() => {
+            setVisibleColumns(new Set(firstItem.INITIAL_VISIBLE_COLUMNS));
+            console.log("First Item:", firstItem);
+      }, [firstItem])
+      const [statusFilter, setStatusFilter] = useState("all");
+      const [rowsPerPage, setRowsPerPage] = useState(5);
+      const tableName = 'blog';
+      const [sortDescriptor, setSortDescriptor] = useState({
             column: "age",
             direction: "ascending",
       });
-      const [page, setPage] = React.useState(1);
+      const [page, setPage] = useState(1);
 
       const hasSearchFilter = Boolean(filterValue);
 
@@ -407,53 +337,11 @@ export default function BlogTable() {
             });
       }, [sortDescriptor, items]);
 
-      const renderCell = React.useCallback((user, columnKey) => {
-            const cellValue = user[columnKey];
 
-            switch (columnKey) {
-                  case "name":
-                        return (
-                              <User
-                                    avatarProps={{ radius: "lg", src: user.avatar }}
-                                    description={user.email}
-                                    name={cellValue}
-                              >
-                                    {user.email}
-                              </User>
-                        );
-                  case "role":
-                        return (
-                              <div className="flex flex-col">
-                                    <p className="text-bold text-small capitalize">{cellValue}</p>
-                                    <p className="text-bold text-tiny capitalize text-default-400">{user.team}</p>
-                              </div>
-                        );
-                  case "status":
-                        return (
-                              <Chip className="capitalize" color={statusColorMap[user.status]} size="sm" variant="flat">
-                                    {cellValue}
-                              </Chip>
-                        );
-                  case "actions":
-                        return (
-                              <div className="relative flex justify-end items-center gap-2">
-                                    <Dropdown>
-                                          <DropdownTrigger>
-                                                <Button isIconOnly size="sm" variant="light">
-                                                      <VerticalDotsIcon className="text-default-300" />
-                                                </Button>
-                                          </DropdownTrigger>
-                                          <DropdownMenu>
-                                                <DropdownItem key="view">View</DropdownItem>
-                                                <DropdownItem key="edit">Edit</DropdownItem>
-                                                <DropdownItem key="delete">Delete</DropdownItem>
-                                          </DropdownMenu>
-                                    </Dropdown>
-                              </div>
-                        );
-                  default:
-                        return cellValue;
-            }
+
+
+      const renderCell = React.useCallback((user, columnKey) => {
+            return <TableCellCustom user={user} columnKey={columnKey} />
       }, []);
 
       const onNextPage = React.useCallback(() => {
@@ -576,37 +464,25 @@ export default function BlogTable() {
 
       const bottomContent = React.useMemo(() => {
             return (
-                  <div className="py-2 px-2 flex justify-between items-center">
-                        <span className="w-[30%] text-small text-default-400">
-                              {selectedKeys === "all"
-                                    ? "All items selected"
-                                    : `${selectedKeys.size} of ${filteredItems.length} selected`}
-                        </span>
-                        <Pagination
-                              isCompact
-                              showControls
-                              showShadow
-                              color="primary"
-                              page={page}
-                              total={pages}
-                              onChange={setPage}
-                        />
-                        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                              <Button isDisabled={pages === 1} size="sm" variant="flat" onPress={onPreviousPage}>
-                                    Previous
-                              </Button>
-                              <Button isDisabled={pages === 1} size="sm" variant="flat" onPress={onNextPage}>
-                                    Next
-                              </Button>
-                        </div>
-                  </div>
+                  <BottomContent
+                        selectedKeys={selectedKeys}
+                        filteredItems={filteredItems}
+                        setPage={setPage}
+                        page={page}
+                        pages={pages}
+                        onPreviousPage={onPreviousPage}
+                        onNextPage={onNextPage}
+                  />
             );
       }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
+      if (list.error) {
+            return <AlertWithAction type="danger" desc={list.error} />
+      }
       return (
             <Table
                   isHeaderSticky
-                  aria-label="Example table with custom cells, pagination and sorting"
+                  aria-label={tableName}
                   bottomContent={bottomContent}
                   bottomContentPlacement="outside"
                   classNames={{
@@ -632,7 +508,7 @@ export default function BlogTable() {
                         )}
                   </TableHeader>
 
-                  <TableBody emptyContent={"No users found"} items={sortedItems} isLoading={false} loadingContent={<Spinner label="Loading..." />}>
+                  <TableBody emptyContent={"No users found"} items={sortedItems} isLoading={list.isLoading} loadingContent={<Spinner label="Loading..." />}>
                         {(item) => (
                               <TableRow key={item.id}>
                                     {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
@@ -682,23 +558,23 @@ export default function BlogTable() {
 //       const tableName = "blog";
 
 //       // Fetch data asynchronously
-      // const list = useAsyncList({
-      //       async load({ signal }) {
-      //             try {
-      //                   const res = await fetch("http://localhost:3000/api/v1/blog/blog-list", { signal });
+// const list = useAsyncList({
+//       async load({ signal }) {
+//             try {
+//                   const res = await fetch("http://localhost:3000/api/v1/blog/blog-list", { signal });
 
-      //                   if (!res.ok) {
-      //                         throw new Error(`HTTP error! Status: ${res.status}`);
-      //                   }
+//                   if (!res.ok) {
+//                         throw new Error(`HTTP error! Status: ${res.status}`);
+//                   }
 
-      //                   const json = await res.json(); // Ensure response is parsed
-      //                   return { items: Array.isArray(json.data) ? json.data : [] };
-      //             } catch (error) {
-      //                   console.error("Error loading data:", error);
-      //                   return { items: [] };
-      //             }
-      //       },
-      // });
+//                   const json = await res.json(); // Ensure response is parsed
+//                   return { items: Array.isArray(json.data) ? json.data : [] };
+//             } catch (error) {
+//                   console.error("Error loading data:", error);
+//                   return { items: [] };
+//             }
+//       },
+// });
 
 //       // Calculate number of pages
 //       const pages = Math.ceil(list.items.length / rowsPerPage);

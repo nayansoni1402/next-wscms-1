@@ -1,98 +1,81 @@
 import React, { useMemo, useState } from 'react'
 import { columns, statusOptions } from './TableData'
 import { Input } from '@nextui-org/input'
+import { ChevronDownIcon, SearchIcon } from '../WsSvg'
 
-export default function TopContent() {
+export default function TopContent({ onRowsPerPageChange, onClear, onSearchChange, statusFilter }) {
 
       return (
             <div className="flex flex-col gap-4">
-                  <div className="flex justify-between items-end gap-3">
+                  <div className="flex justify-between gap-3 items-end">
                         <Input
                               isClearable
-                              classNames={{
-                                    base: "w-full sm:max-w-[24%]",
-                                    inputWrapper: "border-1",
-                              }}
+                              className="w-full sm:max-w-[44%]"
                               placeholder="Search by name..."
-                              size="sm"
-                              // startContent={<WsSvg type="searchIcon" size={34} />}
+                              startContent={<SearchIcon />}
                               value={filterValue}
-                              variant="bordered"
-                              onClear={() => setFilterValue("")}
-                              onValueChange={setFilterValue}
+                              onClear={() => onClear()}
+                              onValueChange={onSearchChange}
                         />
                         <div className="flex gap-3">
                               <Dropdown>
-                                    <DropdownTrigger>
-                                          <Button
-                                                size="sm"
-                                                variant="flat"
-                                                endContent={<WsSvg type="dropdownArrow" hoverColor="#FF0000" size={20} />}
-                                          >
+                                    <DropdownTrigger className="hidden sm:flex">
+                                          <Button endContent={<ChevronDownIcon className="text-small" />} variant="flat">
                                                 Status
                                           </Button>
                                     </DropdownTrigger>
                                     <DropdownMenu
-                                          selectionMode="multiple"
                                           disallowEmptySelection
+                                          aria-label="Table Columns"
+                                          closeOnSelect={false}
                                           selectedKeys={statusFilter}
+                                          selectionMode="multiple"
                                           onSelectionChange={setStatusFilter}
                                     >
                                           {statusOptions.map((status) => (
                                                 <DropdownItem key={status.uid} className="capitalize">
-                                                      {status.name}
+                                                      {capitalize(status.name)}
                                                 </DropdownItem>
                                           ))}
                                     </DropdownMenu>
                               </Dropdown>
                               <Dropdown>
-                                    <DropdownTrigger>
-                                          <Button
-                                                size="sm"
-                                                variant="flat"
-                                                endContent={<WsSvg type="dropdownArrow" hoverColor="#FF0000" size={20} />}
-                                          >
+                                    <DropdownTrigger className="hidden sm:flex">
+                                          <Button endContent={<ChevronDownIcon className="text-small" />} variant="flat">
                                                 Columns
                                           </Button>
                                     </DropdownTrigger>
                                     <DropdownMenu
-                                          selectionMode="multiple"
                                           disallowEmptySelection
+                                          aria-label="Table Columns"
+                                          closeOnSelect={false}
                                           selectedKeys={visibleColumns}
-                                          onSelectionChange={(keys) => handleVisibleColumnsChange(keys)}
+                                          selectionMode="multiple"
+                                          onSelectionChange={setVisibleColumns}
                                     >
                                           {columns.map((column) => (
-                                                <DropdownItem key={column}>
-                                                      {formatColumnName(column)}
+                                                <DropdownItem key={column.uid} className="capitalize">
+                                                      {capitalize(column.name)}
                                                 </DropdownItem>
                                           ))}
                                     </DropdownMenu>
                               </Dropdown>
-                              <Button
-                                    className="bg-foreground text-background"
-                                    size="sm"
-                              // endContent={<SvgIcons.PlusIcon />}
-                              >
+                              <Button color="primary" endContent={<PlusIcon />} className="bg-ws-primary-500">
                                     Add New
                               </Button>
                         </div>
                   </div>
                   <div className="flex justify-between items-center">
-                        <span className="text-default-400 text-small">
-                              Total {total} row
-                        </span>
+                        <span className="text-default-400 text-small">Total {users.length} users</span>
                         <label className="flex items-center text-default-400 text-small">
                               Rows per page:
                               <select
-                                    className="bg-transparent outline-none"
-                                    value={rowsPerPage}
-                                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                                    className="bg-transparent outline-none text-default-400 text-small"
+                                    onChange={onRowsPerPageChange}
                               >
-                                    {[100, 200, 300].map((count) => (
-                                          <option key={count} value={count}>
-                                                {count}
-                                          </option>
-                                    ))}
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="150">150</option>
                               </select>
                         </label>
                   </div>

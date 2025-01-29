@@ -213,16 +213,29 @@ export async function GET(request) {
                         "img": "1524139204cover.jpg"
                   }
             ];
-            const totalPages = Math.ceil(data.length / limit);
+            let INITIAL_VISIBLE_COLUMNS = ["name", "role", "status", "actions"];
+
+            const columns = [
+                  { name: "ID", uid: "id", sortable: true },
+                  { name: "NAME", uid: "name", sortable: true },
+                  { name: "AGE", uid: "age", sortable: true },
+                  { name: "ROLE", uid: "role", sortable: true },
+                  { name: "TEAM", uid: "team" },
+                  { name: "EMAIL", uid: "email" },
+                  { name: "STATUS", uid: "status", sortable: true },
+                  // { name: "ACTIONS", uid: "actions" },
+            ]
 
             const response = {
-                  data,
-                  total: data.length,
-                  page,
-                  totalPages,
+                  items: data,
+                  INITIAL_VISIBLE_COLUMNS: INITIAL_VISIBLE_COLUMNS,
+                  columns: columns,
+                  selectedKeys: {},
+                  isLoading: false,
+                  loadingState: "idle",
+                  filterText: ""
             };
-
-            return NextResponse.json(response);
+            return NextResponse.json([response]);
       } catch (error) {
             console.error("Error fetching vendor details:", error);
             return NextResponse.json(
