@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/blog"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_BLOG")
+}
+
+model Blog {
+  id         Int     @id @default(autoincrement())
+  ref_id     Int
+  title      String
+  slug       String  @unique
+  meta_title String? @db.VarChar(255)
+}
