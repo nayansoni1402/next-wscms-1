@@ -9,9 +9,79 @@ datasource db {
 }
 
 model Blog {
-  id         Int     @id @default(autoincrement())
-  ref_id     Int
-  title      String
-  slug       String  @unique
-  meta_title String? @db.VarChar(255)
+  id               Int       @id @default(autoincrement())
+  ref_id           Int?
+  title            String
+  slug             String    @unique
+  meta_title       String?   @db.VarChar(255)
+  added_by         Int
+  author_id        Int
+  category_id      Int
+  faq              Json?
+  description      Json?
+  image            String?   @db.VarChar(255)
+  image_alt        String?   @db.VarChar(255)
+  meta_description String?
+  meta_keywords    String?
+  new_redirect     String?   @db.VarChar(255)
+  publish_date     DateTime
+  robots           String?   @db.VarChar(255)
+  short_content    String?
+  status           Boolean   @default(false)
+  timestamp        DateTime  @default(now())
+  view             Int       @default(0)
+  user             User      @relation(fields: [added_by], references: [id])
+  author           Author    @relation(fields: [author_id], references: [id])
+  category         Category  @relation(fields: [category_id], references: [id])
+  comments         Comment[]
+
+  @@index([added_by], map: "Blog_added_by_fkey")
+  @@index([author_id], map: "Blog_author_id_fkey")
+  @@index([category_id], map: "Blog_category_id_fkey")
+}
+
+model Category {
+  id               Int      @id @default(autoincrement())
+  title            String
+  slug             String   @unique
+  status           Boolean  @default(false)
+  meta_title       String?  @db.VarChar(255)
+  meta_description String?
+  meta_keywords    String?
+  robots           String?  @db.VarChar(255)
+  timestamp        DateTime @default(now())
+  blogs            Blog[]
+}
+
+model Author {
+  id        Int      @id @default(autoincrement())
+  name      String
+  emailId   String   @unique
+  linkedin  String?
+  twitter   String?
+  timestamp DateTime @default(now())
+  blogs     Blog[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  blog_id   Int
+  name      String
+  email     String
+  phone     String?
+  comment   String
+  status    Boolean  @default(false)
+  reply     String?
+  timestamp DateTime @default(now())
+  blog      Blog     @relation(fields: [blog_id], references: [id])
+
+  @@index([blog_id], map: "Comment_blog_id_fkey")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  blogs    Blog[]
 }
