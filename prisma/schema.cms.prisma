@@ -2752,8 +2752,6 @@ model oc_user {
     folder            String   @db.VarChar(128)
     user_date_start   DateTime @db.Date
     user_date_end     DateTime @db.Date
-
-    blogs     Blog[] @relation("UserBlogs")
 }
 
 model oc_user_group {
