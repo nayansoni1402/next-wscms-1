@@ -15,7 +15,7 @@ async function tranferImage() {
             database: 'blog_25'
         });
 
-        const query = `SELECT id,image FROM Blog`;
+        const query = `SELECT id,image,slug FROM Blog`;
         const [blogs] = await destinationDB.execute(query);
 
         if (blogs.length === 0) {
@@ -27,10 +27,10 @@ async function tranferImage() {
         for (const blog of blogs) {
             const newData = {
                 id: blog.id,
-                image: await s3FuncTranfer(blog.image),
+                image: await s3FuncTranfer(blog.image, blog.slug),
             };
 
-            // await destinationDB.execute(`UPDATE Blog SET image = ? WHERE id = ?`, [newData.image, newData.id]);
+            await destinationDB.execute(`UPDATE Blog SET image = ? WHERE id = ?`, [newData.image, newData.id]);
         }
 
         console.log('Blog data transfer completed successfully.');
@@ -42,25 +42,39 @@ async function tranferImage() {
     }
 }
 
-async function s3FuncTranfer(imageUrl) {
+async function s3FuncTranfer(imageUrl, url) {
     const s3 = new AWS.S3();
+    s3.config.update({
+        accessKeyId: 'accessKeyId',
+        secretAccessKey: 'secretAccessKey',
+        region: 'ap-south-1'
+    });
     try {
         const imageBuffer = await downloadImage(`https://blog.woodenstreet.com/images/data/image_upload/${imageUrl}`);
-        
-        const imageName = path.basename(imageUrl);
-        const s3Key = `images/${Date.now()}_${imageName}`;
+        const extension = path.extname(imageUrl).toLowerCase();
+        const s3Key = `blog-images/${url}/1${extension}`;
+        let contentType;
+        if (extension === '.jpg' || extension === '.jpeg') {
+            contentType = 'image/jpeg';
+        } else if (extension === '.png') {
+            contentType = 'image/png';
+        } else if (extension === '.gif') {
+            contentType = 'image/gif';
+        } else {
+            contentType = 'application/octet-stream';
+        }
 
-        // Upload the image to S3
         const params = {
-            Bucket: process.env.S3_BUCKET_NAME,
+            Bucket: 'wsnew2024',
             Key: s3Key,
             Body: imageBuffer,
-            ContentType: 'image/jpeg', // Assuming it's a JPEG image, change as needed
-            ACL: 'public-read', // Make the image publicly readable
+            ContentType: contentType,
+            ACL: 'public-read',
         };
 
         const { Location } = await s3.upload(params).promise();
-        return Location; // Return the S3 URL
+        console.log(Location.replace('https://wsnew2024.s3.amazonaws.com/blog-images/', ''));
+        return Location.replace('https://wsnew2024.s3.amazonaws.com/blog-images/', ''); // Return the S3 URL
     } catch (err) {
         console.error('Error uploading image to S3:', err);
         throw err; // Propagate the error
