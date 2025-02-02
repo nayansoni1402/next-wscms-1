@@ -47,8 +47,20 @@ async function getUserDetails(userId) {
                   select: {
                         user_id: true,
                         username: true,
+                        user_group_id: true,
                   },
             });
+
+            const userGroup = await CmsDb.oc_user_group.findUnique({
+                  where: {
+                        user_group_id: userDetails.user_group_id,
+                  },
+                  select: {
+                        name: true,
+                  },
+            });
+            userDetails.user_group_id = userGroup.name;
+            // console.log(userDetails);
             return userDetails;
       } catch (error) {
             console.error("Error fetching user details:", error);

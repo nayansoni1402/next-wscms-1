@@ -17,13 +17,28 @@ function TableCellCustom({ user, columnKey }) {
 
       switch (columnKey) {
             case "added_by":
+            case "added_by_profile":
                   return (
                         <User
-                              avatarProps={{ radius: "lg", src: user.avatar }}
-                              description={user.email}
+                              avatarProps={{ radius: "full", src: user.added_by_profile }}
+                              description={user.userGroup}
                               name={cellValue}
                         >
-                              {user.email} hello
+
+                        </User>
+                  );
+            case "title":
+                  return (
+                        <User
+                              avatarProps={{
+                                    radius: "sm",
+                                    size: "lg",
+                                    src: user.image
+                              }}
+                              description={user.image_alt}
+                              name={cellValue}
+                        >
+
                         </User>
                   );
             case "role":

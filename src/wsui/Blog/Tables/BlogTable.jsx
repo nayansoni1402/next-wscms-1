@@ -24,6 +24,16 @@ export default function BlogTable() {
       const [columns, setColumns] = useState([]);
       const [itemsList, setItemsList] = useState([]);
       const [totalCount, setTotalCount] = useState(0);
+
+      const [statusFilter, setStatusFilter] = useState("all");
+      const [rowsPerPage, setRowsPerPage] = useState(50);
+      const tableName = 'blog';
+      const [sortDescriptor, setSortDescriptor] = useState({
+            column: "age",
+            direction: "ascending",
+      });
+      const [page, setPage] = useState(1);
+      
       const list = useAsyncList({
             async load({ signal }) {
                   try {
@@ -41,6 +51,7 @@ export default function BlogTable() {
                         return { items: [] };
                   }
             },
+            dependencies: [page, rowsPerPage],
       });
 
 
@@ -58,15 +69,7 @@ export default function BlogTable() {
       useEffect(() => {
             setVisibleColumns(new Set(firstItem.INITIAL_VISIBLE_COLUMNS));
             console.log("First Item:", firstItem);
-      }, [firstItem])
-      const [statusFilter, setStatusFilter] = useState("all");
-      const [rowsPerPage, setRowsPerPage] = useState(50);
-      const tableName = 'blog';
-      const [sortDescriptor, setSortDescriptor] = useState({
-            column: "age",
-            direction: "ascending",
-      });
-      const [page, setPage] = useState(1);
+      }, [firstItem]);
 
       const hasSearchFilter = Boolean(filterValue);
 
