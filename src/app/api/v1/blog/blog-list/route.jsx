@@ -82,7 +82,7 @@ export async function GET(request) {
                         image_alt: blog.image_alt,
                         status: blog.status,
                         view: blog.view,
-                        added_by_username: blog.added_by.username,
+                        added_by: blog.added_by.username,
                         added_by_profile: blog.added_by.profile ?? null,
                         created_at: blog.created_at,
                         author_id: blog.author.id,
@@ -250,7 +250,7 @@ export async function GET(request) {
             //       }
             // ];
 
-            let INITIAL_VISIBLE_COLUMNS = ["id", "added_by_username", "added_by_profile", "title", "image", "created_at", "actions"];
+            let INITIAL_VISIBLE_COLUMNS = ["id", "added_by", "added_by_profile", "title", "image", "status", "created_at", "actions"];
 
             const columns = Object.keys(flattenedData[0]).map((key) => {
                   let columnName;
@@ -268,8 +268,8 @@ export async function GET(request) {
                         case "status":
                               columnName = "Status";
                               break;
-                        case "added_by_username":
-                              columnName = "Added By Username";
+                        case "added_by":
+                              columnName = "Added By";
                               break;
                         default:
                               columnName = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
