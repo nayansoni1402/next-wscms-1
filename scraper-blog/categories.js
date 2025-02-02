@@ -19,7 +19,7 @@ async function transferCategories() {
         });
 
         // Fetch categories from source database
-        const [categories] = await sourceDB.execute('SELECT * FROM categories where id  !=13');
+        const [categories] = await sourceDB.execute('SELECT * FROM categories');
 
         if (categories.length === 0) {
             console.log('No categories found to transfer.');
@@ -39,13 +39,14 @@ async function transferCategories() {
                 meta_title: category.meta_title,
                 meta_description: category.meta_description,
                 meta_keywords: category.meta_keyword,
-                robots: 'Index, Follow'
+                robots: 'Index, Follow',
+                added_by: 1,
             };
             // console.log(newData)
             // return newData;
             await destinationDB.execute(
-                `INSERT INTO Category (ref_id, title, slug, status, meta_title, meta_description, meta_keywords, robots) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
+                `INSERT INTO Category (ref_id, title, slug, status, meta_title, meta_description, meta_keywords, robots,added_by) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?,?) 
                 ON DUPLICATE KEY UPDATE 
                 title = VALUES(title), 
                 slug = VALUES(slug), 
@@ -53,8 +54,9 @@ async function transferCategories() {
                 meta_title = VALUES(meta_title), 
                 meta_description = VALUES(meta_description), 
                 meta_keywords = VALUES(meta_keywords), 
-                robots = VALUES(robots)`,
-                [newData.ref_id, newData.title, newData.slug, newData.status, newData.meta_title, newData.meta_description, newData.meta_keywords, newData.robots]
+                robots = VALUES(robots),
+                added_by = VALUES(added_by)`,
+                [newData.ref_id, newData.title, newData.slug, newData.status, newData.meta_title, newData.meta_description, newData.meta_keywords, newData.robots, newData.added_by]
             );
         }
 

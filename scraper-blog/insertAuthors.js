@@ -20,8 +20,8 @@ async function insertAuthors() {
 
         for (const author of authors) {
             await destinationDB.execute(
-                `INSERT INTO Author (name, emailId, linkedin, twitter, timestamp) 
-                VALUES (?, ?, ?, ?, NOW()) 
+                `INSERT INTO Author (name, emailId, linkedin, twitter) 
+                VALUES (?, ?, ?, ?) 
                 ON DUPLICATE KEY UPDATE 
                 name = VALUES(name), 
                 linkedin = VALUES(linkedin), 

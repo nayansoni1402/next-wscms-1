@@ -19,8 +19,11 @@ async function transferBlogs() {
         });
 
         // Fetch blogs from source database
-        // const [existingBlog] = await destinationDB.execute('SELECT ref_id FROM blogs WHERE ref_id = ?', [blog.id]);
-        const [blogs] = await sourceDB.execute('SELECT * FROM blogs where id = 110');
+        const [existingBlogRows] = await destinationDB.execute('SELECT ref_id FROM Blog');
+        const existingBlogIds = existingBlogRows.map(row => row.ref_id);
+
+        const query = `SELECT * FROM blogs WHERE id NOT IN (?)`;
+        const [blogs] = await sourceDB.execute(query, [existingBlogIds]);
 
         if (blogs.length === 0) {
             console.log('No blogs found to transfer.');
@@ -32,14 +35,14 @@ async function transferBlogs() {
         // Insert blogs into destination database
         for (const blog of blogs) {
             const randomAuthorId = Math.floor(Math.random() * 5) + 1;
-            const [catId] = await destinationDB.execute(`SELECT * FROM Category where ref_id = ${blog.category_id}`);
+            const [catId] = await destinationDB.execute(`SELECT * FROM Category where ref_id = ${blog.category_id.split(',')[0]}`);
             if (catId.length === 0) {
                 console.log(`Category not found for blog ID: ${blog.id}, skipping...`);
                 continue;
             }
 
             const category_id_org = catId[0].id;
-
+            const publishDate = (blog.publish_date === '0000-00-00 00:00:00' || !isValidDate(blog.publish_date)) ? null : new Date(blog.publish_date);
             const newData = {
                 ref_id: blog.id,
                 author_id: randomAuthorId,
@@ -51,19 +54,18 @@ async function transferBlogs() {
                 slug: blog.permalinks,
                 view: blog.view,
                 robots: 'Index, Follow',
-                publish_date: blog.publish_date,
+                publish_date: publishDate,
                 added_by: 1,
                 category_id: category_id_org,
                 image_alt: blog.image_alt,
+                image: blog.img,
+                description_old: blog.spaw1
             };
-            
 
-//   added_by: 1,
-//   description:spaw1 //jseditor,
-//   image:img
+
             await destinationDB.execute(
-                `INSERT INTO Blog (ref_id, author_id, title, meta_title, meta_description, short_content, status, slug, view, robots, publish_date, added_by, category_id, image_alt, image) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                `INSERT INTO Blog (ref_id, author_id, title, meta_title, meta_description, short_content, status, slug, view, robots, publish_date, added_by, category_id, image_alt, image,description_old) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) 
                 ON DUPLICATE KEY UPDATE 
                 author_id = VALUES(author_id), 
                 title = VALUES(title), 
@@ -77,7 +79,9 @@ async function transferBlogs() {
                 publish_date = VALUES(publish_date), 
                 added_by = VALUES(added_by), 
                 category_id = VALUES(category_id), 
-                image_alt = VALUES(image_alt)
+                image_alt = VALUES(image_alt),
+                image = VALUES(image),
+                description_old = VALUES(description_old)
                 `,
                 [
                     newData.ref_id,
@@ -94,6 +98,8 @@ async function transferBlogs() {
                     newData.added_by,
                     newData.category_id,
                     newData.image_alt,
+                    newData.image,
+                    newData.description_old
                 ]
             );
         }
@@ -109,3 +115,8 @@ async function transferBlogs() {
 }
 
 transferBlogs();
+
+const isValidDate = (date) => {
+    const parsedDate = new Date(date);
+    return parsedDate instanceof Date && !isNaN(parsedDate);
+};

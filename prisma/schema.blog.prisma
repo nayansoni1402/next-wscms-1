@@ -18,30 +18,31 @@ model Blog {
   author_id        Int
   category_id      Int
   description      Json?
+  description_old  String?   @db.LongText
   image            String?   @db.VarChar(255)
   image_alt        String?   @db.VarChar(255)
-  meta_description String?
+  meta_description String?   @db.LongText
   meta_keywords    String?
   new_redirect     String?   @db.VarChar(255)
-  publish_date     DateTime
+  publish_date     DateTime?
   robots           String?   @db.VarChar(255)
-  short_content    String?
+  short_content    String?   @db.LongText
   status           Boolean   @default(false)
-  timestamp        DateTime  @default(now())
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @default(now()) @updatedAt
   view             Int       @default(0)
   faq              Json?
-  user             oc_user   @relation(fields: [added_by], references: [user_id]) @db(cmsDb)
   author           Author    @relation(fields: [author_id], references: [id])
   category         Category  @relation(fields: [category_id], references: [id])
   comments         Comment[]
 
-  @@index([added_by], map: "Blog_added_by_fkey")
   @@index([author_id], map: "Blog_author_id_fkey")
   @@index([category_id], map: "Blog_category_id_fkey")
 }
 
 model Category {
   id               Int      @id @default(autoincrement())
+  added_by         Int
   title            String
   slug             String   @unique
   status           Boolean  @default(false)
@@ -49,32 +50,35 @@ model Category {
   meta_description String?
   meta_keywords    String?
   robots           String?  @db.VarChar(255)
-  timestamp        DateTime @default(now())
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now()) @updatedAt
   ref_id           Int?
   blogs            Blog[]
 }
 
 model Author {
-  id        Int      @id @default(autoincrement())
-  name      String
-  emailId   String   @unique
-  linkedin  String?
-  twitter   String?
-  timestamp DateTime @default(now())
-  blogs     Blog[]
+  id         Int      @id @default(autoincrement())
+  name       String
+  emailId    String   @unique
+  linkedin   String?
+  twitter    String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  blogs      Blog[]
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  blog_id   Int
-  name      String
-  email     String
-  phone     String?
-  comment   String
-  status    Boolean  @default(false)
-  reply     String?
-  timestamp DateTime @default(now())
-  blog      Blog     @relation(fields: [blog_id], references: [id])
+  id         Int      @id @default(autoincrement())
+  blog_id    Int
+  name       String
+  email      String
+  phone      String?
+  comment    String
+  status     Boolean  @default(false)
+  reply      String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  blog       Blog     @relation(fields: [blog_id], references: [id])
 
   @@index([blog_id], map: "Comment_blog_id_fkey")
 }
@@ -84,5 +88,4 @@ model User {
   name     String
   email    String @unique
   password String
-  blogs    Blog[]
 }
