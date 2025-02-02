@@ -6,6 +6,7 @@
 
 import { buildDynamicFilter } from "@/lib/helper/buildDynamicFilter";
 import { blogDb } from "@/lib/prismaClients";
+import { formatDateMoment } from "@/lib/utils";
 import { NextResponse } from "next/server";
 // import { VendorDetailSchema } from "@/lib/schema/vendorDetailSchema";
 // import { z } from "zod";
@@ -85,7 +86,7 @@ export async function GET(request) {
                         added_by: blog.added_by.username,
                         userGroup: blog.added_by.user_group_id,
                         added_by_profile: blog.added_by.profile ?? null,
-                        created_at: blog.created_at,
+                        created_at: formatDateMoment(blog.created_at),
                         author_id: blog.author.id,
                         author_name: blog.author.name,
                         comments_count: blog.comments.length,

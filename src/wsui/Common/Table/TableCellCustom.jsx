@@ -11,13 +11,13 @@ import {
 } from "@heroui/react";
 import { statusColorMap, statusMap } from "./commanData";
 import WsSvg, { VerticalDotsIcon } from "../WsSvg";
+import { Avatar, badge, Badge } from "@nextui-org/react";
 
 function TableCellCustom({ user, columnKey }) {
       const cellValue = user[columnKey];
 
       switch (columnKey) {
             case "added_by":
-            case "added_by_profile":
                   return (
                         <User
                               avatarProps={{ radius: "full", src: user.added_by_profile }}
@@ -34,18 +34,19 @@ function TableCellCustom({ user, columnKey }) {
                                     radius: "sm",
                                     size: "lg",
                                     src: user.image
+
                               }}
                               description={user.image_alt}
                               name={cellValue}
                         >
-
                         </User>
                   );
-            case "role":
+            case "view":
                   return (
                         <div className="flex flex-col">
                               <p className="text-bold text-small capitalize">{cellValue}</p>
                               <p className="text-bold text-tiny capitalize text-default-400">{user.team}</p>
+                              {user.comments_count != 0 && <Badge color="danger" content={user.comments_count} shape="circle" />}
                         </div>
                   );
             case "status":
