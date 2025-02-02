@@ -17,7 +17,6 @@ model Blog {
   added_by         Int
   author_id        Int
   category_id      Int
-  faq              Json?
   description      Json?
   image            String?   @db.VarChar(255)
   image_alt        String?   @db.VarChar(255)
@@ -30,7 +29,8 @@ model Blog {
   status           Boolean   @default(false)
   timestamp        DateTime  @default(now())
   view             Int       @default(0)
-  user             User      @relation(fields: [added_by], references: [id])
+  faq              Json?
+  user             oc_user   @relation(fields: [added_by], references: [user_id]) @db(cmsDb)
   author           Author    @relation(fields: [author_id], references: [id])
   category         Category  @relation(fields: [category_id], references: [id])
   comments         Comment[]
@@ -50,6 +50,7 @@ model Category {
   meta_keywords    String?
   robots           String?  @db.VarChar(255)
   timestamp        DateTime @default(now())
+  ref_id           Int?
   blogs            Blog[]
 }
 

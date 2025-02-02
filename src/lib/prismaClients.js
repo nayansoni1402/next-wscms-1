@@ -1,6 +1,8 @@
 import { PrismaClient as BlogPrismaClient } from "../../generated/blog";
+import { PrismaClient as CmsPrismaClient } from "../../generated/cms";
 
 const blogDb = new BlogPrismaClient();
+const CmsDb = new CmsPrismaClient();
 
 const BASE_URL = process.env.NEXT_PUBLIC_S3_BLOG_URL;
 
@@ -24,4 +26,4 @@ blogDb.$use(async (params, next) => {
       return result;
 });
 
-export { blogDb };
+export { blogDb, CmsDb };
