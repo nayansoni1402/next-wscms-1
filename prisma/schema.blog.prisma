@@ -27,7 +27,7 @@ model Blog {
   publish_date     DateTime?
   robots           String?   @db.VarChar(255)
   short_content    String?   @db.LongText
-  status           Boolean   @default(false)
+  status           Int       @default(0)
   created_at       DateTime  @default(now())
   updated_at       DateTime  @default(now()) @updatedAt
   view             Int       @default(0)
@@ -45,7 +45,7 @@ model Category {
   added_by         Int
   title            String
   slug             String   @unique
-  status           Boolean  @default(false)
+  status           Int      @default(0)
   meta_title       String?  @db.VarChar(255)
   meta_description String?
   meta_keywords    String?
@@ -73,9 +73,9 @@ model Comment {
   name       String
   email      String
   phone      String?
-  comment    String
-  status     Boolean  @default(false)
-  reply      String?
+  comment    String   @db.LongText
+  status     Int      @default(0)
+  reply      String?  @db.LongText
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
   blog       Blog     @relation(fields: [blog_id], references: [id])

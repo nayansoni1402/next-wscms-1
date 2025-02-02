@@ -23,6 +23,7 @@ export default function BlogTable() {
       const [firstItem, setFirstItem] = useState([]);
       const [columns, setColumns] = useState([]);
       const [itemsList, setItemsList] = useState([]);
+      const [totalCount, setTotalCount] = useState(0);
       const list = useAsyncList({
             async load({ signal }) {
                   try {
@@ -41,11 +42,14 @@ export default function BlogTable() {
                   }
             },
       });
+
+
       // Effect hook to log items
       useEffect(() => {
             if (list?.items?.length > 0) {
                   setColumns(list.items[0].columns);
-                  setItemsList(list.items[0].items)
+                  setTotalCount(list.items[0].totalCount);
+                  setItemsList(list.items[0].items);
                   setFirstItem(list.items[0]);
             }
       }, [list.items]);
@@ -56,7 +60,7 @@ export default function BlogTable() {
             console.log("First Item:", firstItem);
       }, [firstItem])
       const [statusFilter, setStatusFilter] = useState("all");
-      const [rowsPerPage, setRowsPerPage] = useState(5);
+      const [rowsPerPage, setRowsPerPage] = useState(50);
       const tableName = 'blog';
       const [sortDescriptor, setSortDescriptor] = useState({
             column: "age",
@@ -89,7 +93,7 @@ export default function BlogTable() {
             return filteredUsers;
       }, [itemsList, filterValue, statusFilter]);
 
-      const pages = Math.ceil(filteredItems.length / rowsPerPage);
+      const pages = Math.ceil(totalCount / rowsPerPage);
 
       const items = React.useMemo(() => {
             const start = (page - 1) * rowsPerPage;
@@ -195,7 +199,7 @@ export default function BlogTable() {
                   bottomContent={bottomContent}
                   bottomContentPlacement="outside"
                   classNames={{
-                        wrapper: "max-h-[382px]",
+                        wrapper: "max-h-[682px]",
                   }}
                   selectedKeys={selectedKeys}
                   selectionMode="multiple"
