@@ -4,6 +4,7 @@
 // npx prisma migrate dev --name add_updated_at_trigger --schema=prisma/schema.blog.prisma
 // npx prisma migrate deploy  --schema=prisma/schema.blog.prisma
 
+import { buildDynamicFilter } from "@/lib/helper/buildDynamicFilter";
 import { blogDb } from "@/lib/prismaClients";
 import { NextResponse } from "next/server";
 // import { VendorDetailSchema } from "@/lib/schema/vendorDetailSchema";
@@ -14,42 +15,40 @@ export async function GET(request) {
       try {
             const { searchParams } = new URL(request.url);
 
-            // Pagination parameters
             const page = Math.max(parseInt(searchParams.get("page"), 10) || 1, 1);
             const limit = Math.min(parseInt(searchParams.get("limit"), 10) || 20, 100);
             const skip = (page - 1) * limit;
 
             const searchKey = searchParams.get("search_key");
 
-            const searchableColumns = [
-                  "id",
-                  "title",
-                  "slug",
-                  "meta_title",
-            ];
+            const searchableColumns = ["id", "title"];
+            const dynamicFilter = buildDynamicFilter(searchKey, searchableColumns);
 
-            const dynamicFilter = searchKey
-                  ? {
-                        OR: searchableColumns.map((column) => ({
-                              [column]: { contains: searchKey, mode: "insensitive" },
-                        })),
-                  }
-                  : {};
-
-
-
-            // Fetch with pagination
+            // Fetch the transformed data with optimized query
             const transformedData = await blogDb.blog.findMany({
+                  select: {
+                        id: true,
+                        ref_id: true,
+                        title: true,
+                        slug: true,
+                        image: true,
+                        image_alt: true,
+                        status: true,
+                        view: true,
+                        comments: true,
+                        category_id: true,
+                        added_by: true,
+                        author_id: true,
+                  },
                   where: dynamicFilter,
                   orderBy: { id: "desc" },
                   skip,
                   take: limit,
             });
 
+            return NextResponse.json([transformedData]);
 
-            // Calculate total pages
 
-            // Return the response with pagination information
 
             let data = [
                   {
@@ -232,7 +231,7 @@ export async function GET(request) {
             };
             return NextResponse.json([response]);
       } catch (error) {
-            console.error("Error fetching vendor details:", error);
+            console.error("Error fetching details:", error);
             return NextResponse.json(
                   { error: "Internal Server Error" },
                   { status: 500 }
