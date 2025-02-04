@@ -33,7 +33,7 @@ export default function BlogTable() {
             direction: "ascending",
       });
       const [page, setPage] = useState(1);
-      
+
       const list = useAsyncList({
             async load({ signal }) {
                   try {
@@ -51,17 +51,24 @@ export default function BlogTable() {
                         return { items: [] };
                   }
             },
-            dependencies: [page, rowsPerPage],
+            async reload() {
+                  return await list.load({ signal: new AbortController().signal });
+            }
       });
 
+      useEffect(() => {
+            list.reload();
+      }, [page, rowsPerPage]);
 
       // Effect hook to log items
       useEffect(() => {
             if (list?.items?.length > 0) {
-                  setColumns(list.items[0].columns);
-                  setTotalCount(list.items[0].totalCount);
-                  setItemsList(list.items[0].items);
-                  setFirstItem(list.items[0]);
+                  setColumns(list.items[0].columns || []);
+                  setTotalCount(list.items[0].totalCount || 0);
+                  setItemsList(list.items[0].items || []);
+                  setFirstItem(list.items[0] || {});
+            } else {
+                  setItemsList([]);
             }
       }, [list.items]);
 
