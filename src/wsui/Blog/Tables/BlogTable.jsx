@@ -34,9 +34,11 @@ export default function BlogTable() {
       });
       const [page, setPage] = useState(1);
 
+
       const list = useAsyncList({
             async load({ signal }) {
                   try {
+                        console.log(`Fetching data for page: ${page}, limit: ${rowsPerPage}`);
                         const res = await fetch(`http://localhost:3000/api/v1/blog/blog-list?page=${page}&limit=${rowsPerPage}`, { signal });
 
                         if (!res.ok) {
@@ -44,33 +46,58 @@ export default function BlogTable() {
                         }
 
                         const json = await res.json();
+                        console.log("API Response:", json[0].items);
 
-                        return { items: json };
+                        return { items: json || [] };
                   } catch (error) {
                         console.error("Error loading data:", error);
                         return { items: [] };
                   }
             },
-            async reload() {
-                  return await list.load({ signal: new AbortController().signal });
-            }
+            getKey: () => `${page}-${rowsPerPage}`
       });
 
+      // const list = useAsyncList({
+      //       async load({ signal }) {
+      //             try {
+      //                   const res = await fetch(`http://localhost:3000/api/v1/blog/blog-list?page=${page}&limit=${rowsPerPage}`, { signal });
+
+      //                   if (!res.ok) {
+      //                         throw new Error(`HTTP error! Status: ${res.status}`);
+      //                   }
+
+      //                   const json = await res.json();
+
+      //                   return { items: json };
+      //             } catch (error) {
+      //                   console.error("Error loading data:", error);
+      //                   return { items: [] };
+      //             }
+      //       },
+      //       async reload() {
+      //             return await list.load({ signal: new AbortController().signal });
+      //       }
+      // });
+
       useEffect(() => {
+            console.log(`Reloading data for page ${page} with limit ${rowsPerPage}`);
             list.reload();
       }, [page, rowsPerPage]);
 
       // Effect hook to log items
       useEffect(() => {
-            if (list?.items?.length > 0) {
-                  setColumns(list.items[0].columns || []);
-                  setTotalCount(list.items[0].totalCount || 0);
-                  setItemsList(list.items[0].items || []);
+            if (list?.items.length > 0) {
+                  console.log("Setting Items:", list.items[0].items);
+                  setColumns(list.items[0]?.columns || []);
+                  setTotalCount(list.items[0]?.totalCount || 0);
+                  setItemsList(list.items[0]?.items || []);
                   setFirstItem(list.items[0] || {});
             } else {
-                  setItemsList([]);
+                  console.warn("No items found in response.");
+                  setItemsList([]);  // Ensures table updates
             }
-      }, [list.items]);
+      }, [list.items, page, rowsPerPage]);
+
 
 
       useEffect(() => {
@@ -101,7 +128,7 @@ export default function BlogTable() {
             }
 
             return filteredUsers;
-      }, [itemsList, filterValue, statusFilter]);
+      }, [itemsList, filterValue, statusFilter, page]);
 
       const pages = Math.ceil(totalCount / rowsPerPage);
 
