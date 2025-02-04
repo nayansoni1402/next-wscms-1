@@ -17,6 +17,7 @@ import BottomContent from "@/wsui/Common/Table/BottomContent";
 import TopContent from "@/wsui/Common/Table/TopContent";
 
 export default function BlogTable() {
+
       const [filterValue, setFilterValue] = useState("");
       const [selectedKeys, setSelectedKeys] = useState(new Set([]));
       const [visibleColumns, setVisibleColumns] = useState(new Set());
@@ -25,6 +26,7 @@ export default function BlogTable() {
       const [itemsList, setItemsList] = useState([]);
       const [totalCount, setTotalCount] = useState(0);
 
+      const [isError, setIsError] = useState(null);
       const [statusFilter, setStatusFilter] = useState("all");
       const [rowsPerPage, setRowsPerPage] = useState(50);
       const tableName = 'blog';
@@ -37,19 +39,27 @@ export default function BlogTable() {
 
       const list = useAsyncList({
             async load({ signal }) {
+                  const controller = new AbortController();
+                  const { signal: abortSignal } = controller;
+
                   try {
-                        console.log(`Fetching data for page: ${page}, limit: ${rowsPerPage}`);
-                        const res = await fetch(`http://localhost:3000/api/v1/blog/blog-list?page=${page}&limit=${rowsPerPage}`, { signal });
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=${page}&limit=${rowsPerPage}`, {
+                              signal: abortSignal
+                        });
 
                         if (!res.ok) {
                               throw new Error(`HTTP error! Status: ${res.status}`);
                         }
 
                         const json = await res.json();
-                        console.log("API Response:", json[0].items);
-
                         return { items: json || [] };
                   } catch (error) {
+                        if (abortSignal.aborted) {
+                              setIsError(error);
+                              console.warn("Request aborted:", error);
+                              return { items: [] };
+                        }
+                        setIsError(error);
                         console.error("Error loading data:", error);
                         return { items: [] };
                   }
@@ -57,30 +67,7 @@ export default function BlogTable() {
             getKey: () => `${page}-${rowsPerPage}`
       });
 
-      // const list = useAsyncList({
-      //       async load({ signal }) {
-      //             try {
-      //                   const res = await fetch(`http://localhost:3000/api/v1/blog/blog-list?page=${page}&limit=${rowsPerPage}`, { signal });
-
-      //                   if (!res.ok) {
-      //                         throw new Error(`HTTP error! Status: ${res.status}`);
-      //                   }
-
-      //                   const json = await res.json();
-
-      //                   return { items: json };
-      //             } catch (error) {
-      //                   console.error("Error loading data:", error);
-      //                   return { items: [] };
-      //             }
-      //       },
-      //       async reload() {
-      //             return await list.load({ signal: new AbortController().signal });
-      //       }
-      // });
-
       useEffect(() => {
-            console.log(`Reloading data for page ${page} with limit ${rowsPerPage}`);
             list.reload();
       }, [page, rowsPerPage]);
 
@@ -90,11 +77,11 @@ export default function BlogTable() {
                   console.log("Setting Items:", list.items[0].items);
                   setColumns(list.items[0]?.columns || []);
                   setTotalCount(list.items[0]?.totalCount || 0);
-                  setItemsList(list.items[0]?.items || []);
+                  setItemsList([...list.items[0]?.items] || []);
                   setFirstItem(list.items[0] || {});
             } else {
                   console.warn("No items found in response.");
-                  setItemsList([]);  // Ensures table updates
+                  setItemsList([]);
             }
       }, [list.items, page, rowsPerPage]);
 
@@ -118,7 +105,7 @@ export default function BlogTable() {
 
             if (hasSearchFilter) {
                   filteredUsers = filteredUsers.filter((user) =>
-                        user.name.toLowerCase().includes(filterValue.toLowerCase()),
+                        user.title.toLowerCase().includes(filterValue.toLowerCase()),
                   );
             }
             if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
@@ -140,17 +127,16 @@ export default function BlogTable() {
       }, [page, filteredItems, rowsPerPage]);
 
       const sortedItems = React.useMemo(() => {
-            return [...items].sort((a, b) => {
+            if (!itemsList.length) return [];
+
+            return [...itemsList].sort((a, b) => {
                   const first = a[sortDescriptor.column];
                   const second = b[sortDescriptor.column];
                   const cmp = first < second ? -1 : first > second ? 1 : 0;
 
                   return sortDescriptor.direction === "descending" ? -cmp : cmp;
             });
-      }, [sortDescriptor, items]);
-
-
-
+      }, [sortDescriptor, itemsList]);
 
       const renderCell = React.useCallback((user, columnKey) => {
             return <TableCellCustom user={user} columnKey={columnKey} />
@@ -226,8 +212,8 @@ export default function BlogTable() {
             );
       }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
-      if (list.error) {
-            return <AlertWithAction type="danger" desc={list.error} />
+      if (list.error || isError) {
+            return <AlertWithAction type="danger" desc={list.error || isError} />
       }
       return (
             <Table
@@ -268,132 +254,3 @@ export default function BlogTable() {
             </Table>
       );
 }
-
-
-
-
-
-// 'use client'
-// import React, { useEffect, useMemo, useState } from 'react';
-// import {
-//       Table,
-//       TableHeader,
-//       TableColumn,
-//       TableBody,
-//       TableRow,
-//       TableCell,
-//       Spinner,
-// } from "@heroui/react";
-// import { useAsyncList } from "@react-stately/data";
-// import BottomContent from '@/wsui/Common/Table/BottomContent';
-// import { RenderCell } from '@/wsui/Common/Table/RenderCell';
-// import { formatColumnName } from '@/lib/utils';
-// import { getCookie } from '@/lib/cookies';
-
-// // Define table columns
-// export const columns = [
-//       { name: "ID", uid: "id", sortable: false },
-//       { name: "Image", uid: "image" },
-//       { name: "Title", uid: "title", sortable: true },
-//       { name: "Status", uid: "status", sortable: true },
-//       { name: "Added Date", uid: "added_date", sortable: true },
-//       { name: "Http Status", uid: "httpstatus", sortable: true },
-//       { name: "Actions", uid: "actions" },
-// ];
-
-// export default function BlogTable() {
-//       const [selectedKeys, setSelectedKeys] = useState(new Set([]));
-//       const [page, setPage] = useState(1);
-//       const rowsPerPage = 3;
-//       const tableName = "blog";
-
-//       // Fetch data asynchronously
-// const list = useAsyncList({
-//       async load({ signal }) {
-//             try {
-//                   const res = await fetch("http://localhost:3000/api/v1/blog/blog-list", { signal });
-
-//                   if (!res.ok) {
-//                         throw new Error(`HTTP error! Status: ${res.status}`);
-//                   }
-
-//                   const json = await res.json(); // Ensure response is parsed
-//                   return { items: Array.isArray(json.data) ? json.data : [] };
-//             } catch (error) {
-//                   console.error("Error loading data:", error);
-//                   return { items: [] };
-//             }
-//       },
-// });
-
-//       // Calculate number of pages
-//       const pages = Math.ceil(list.items.length / rowsPerPage);
-//       const items = useMemo(() => list.items.slice((page - 1) * rowsPerPage, page * rowsPerPage), [list.items, page]);
-
-//       // Visible columns logic
-//       const [visibleColumns, setVisibleColumns] = useState(new Set());
-//       useEffect(() => {
-//             const cookieData = getCookie("visible_columns");
-//             if (tableName && cookieData && cookieData[tableName]) {
-//                   setVisibleColumns(new Set(cookieData[tableName]));
-//             } else {
-//                   const defaultColumns = new Set(columns.map(col => col.uid).slice(0, 5));
-//                   defaultColumns.add("actions");
-//                   setVisibleColumns(defaultColumns);
-//             }
-//       }, [tableName]);
-
-//       // Compute visible columns based on user selection
-//       const headerColumns = useMemo(() => {
-//             const visible = columns.filter(col => visibleColumns.has(col.uid));
-//             if (visibleColumns.has("actions") && !visible.some(col => col.uid === "actions")) {
-//                   visible.push({ name: "Actions", uid: "actions" });
-//             }
-//             return visible;
-//       }, [visibleColumns]);
-
-//       return (
-//             <>
-//                   <Table
-//                         aria-label="Example table with client-side sorting"
-//                         classNames={{ table: "min-h-[400px]" }}
-//                         sortDescriptor={list.sortDescriptor}
-//                         onSortChange={list.sort}
-//                         onSelectionChange={setSelectedKeys}
-//                         selectedKeys={selectedKeys}
-//                         selectionMode="multiple"
-//                   >
-//                         <TableHeader>
-//                               {headerColumns.map((column) => (
-//                                     <TableColumn
-//                                           key={column.uid}
-//                                           allowsSorting={column.sortable}
-//                                           align={column.uid === "actions" ? "center" : "start"}
-//                                     >
-//                                           {formatColumnName(column.name)}
-//                                     </TableColumn>
-//                               ))}
-//                         </TableHeader>
-
-//                         <TableBody
-//                               isLoading={list.isLoading}
-//                               items={items}
-//                               emptyContent="No data found"
-//                               loadingContent={<Spinner label="Loading..." />}
-//                         >
-//                               {(item) => (
-//                                     <TableRow key={item.id}>
-//                                           {headerColumns.map((column) => (
-//                                                 <TableCell key={column.uid}>
-//                                                       {RenderCell({ item, columnKey: column.uid })}
-//                                                 </TableCell>
-//                                           ))}
-//                                     </TableRow>
-//                               )}
-//                         </TableBody>
-//                   </Table>
-
-//                   <BottomContent pages={pages} page={page} setPage={setPage} selectedKeys={selectedKeys} items={items} />
-//             </>
-//       );
-// }
