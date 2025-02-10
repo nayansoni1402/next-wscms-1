@@ -10,18 +10,18 @@ import {
       User
 } from "@heroui/react";
 import { statusColorMap, statusMap } from "./commanData";
-import WsSvg, { DeleteIcon, EditIcon, EyeIcon, VerticalDotsIcon } from "../WsSvg";
+import WsSvg, { DeleteIcon, EditIcon, EyeIcon, NotificationIcon, VerticalDotsIcon } from "../WsSvg";
 import { Avatar, badge, Badge, Tooltip } from "@nextui-org/react";
 
-function TableCellCustom({ user, columnKey }) {
-      const cellValue = user[columnKey];
+function TableCellCustom({ item, columnKey }) {
+      const cellValue = item[columnKey];
 
       switch (columnKey) {
             case "added_by":
                   return (
                         <User
-                              avatarProps={{ radius: "full", src: user.added_by_profile }}
-                              description={user.userGroup}
+                              avatarProps={{ radius: "full", src: item.added_by_profile }}
+                              description={item.userGroup}
                               name={cellValue}
                         >
 
@@ -33,25 +33,50 @@ function TableCellCustom({ user, columnKey }) {
                               avatarProps={{
                                     radius: "sm",
                                     size: "lg",
-                                    src: user.image
+                                    src: item.image
 
                               }}
-                              description={user.category_name}
+                              description={
+                                    <>
+                                          {item.comments_count !== 0 && (
+                                                <Tooltip content={
+                                                      <div className="px-1 py-2">
+                                                            <div className="text-small">Unread Comments</div>
+                                                            <div className="text-tiny">
+                                                                  You have {item.comments_count} unread {item.comments_count > 1 ? "comments" : "comment"}.
+                                                            </div>
+                                                      </div>
+                                                }>
+                                                      <Chip
+                                                            color="danger"
+                                                            endContent={<NotificationIcon size={14} />}
+                                                            size="sm"
+                                                            variant="flat"
+                                                      >
+                                                            {item.comments_count}
+                                                      </Chip>
+                                                </Tooltip>
+                                          )}
+                                          {' '}
+                                          {item.category_name}
+                                    </>
+                              }
+
                               name={cellValue}
                         >
-                        </User>
+                        </User >
                   );
             case "view":
                   return (
                         <div className="flex flex-col">
                               <p className="text-bold text-small capitalize">{cellValue}</p>
-                              <p className="text-bold text-tiny capitalize text-default-400">{user.team}</p>
-                              {user.comments_count != 0 && <Badge color="danger" content={user.comments_count} shape="circle" />}
+                              <p className="text-bold text-tiny capitalize text-default-400">{item.team}</p>
+                              {item.comments_count != 0 && <Badge color="danger" content={item.comments_count} shape="circle" />}
                         </div>
                   );
             case "status":
                   return (
-                        <Chip className="capitalize border-none gap-1 text-default-600" color={statusColorMap[user.status]} size="sm" variant="dot">
+                        <Chip className="capitalize border-none gap-1 text-default-600" color={statusColorMap[item.status]} size="sm" variant="dot">
                               {statusMap[cellValue]}
                         </Chip>
                   );

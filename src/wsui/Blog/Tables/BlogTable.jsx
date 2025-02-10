@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
       Table,
       TableHeader,
@@ -16,15 +16,14 @@ import TableCellCustom from "@/wsui/Common/Table/TableCellCustom";
 import TopContent from "@/wsui/Common/Table/TopContent";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 
-export default function BlogTable() {
 
+export default function BlogTable({ blogData }) {
       const [filterValue, setFilterValue] = useState("");
       const [selectedKeys, setSelectedKeys] = useState(new Set([]));
-      const [visibleColumns, setVisibleColumns] = useState(new Set());
-      const [firstItem, setFirstItem] = useState([]);
-      const [columns, setColumns] = useState([]);
-      const [itemsList, setItemsList] = useState([]);
-      const [totalCount, setTotalCount] = useState(0);
+      const [visibleColumns, setVisibleColumns] = useState(new Set(blogData.INITIAL_VISIBLE_COLUMNS));
+      const [columns, setColumns] = useState(blogData.columns);
+      // const [itemsList, setItemsList] = useState([]);
+      const [totalCount, setTotalCount] = useState(blogData.totalCount);
 
       const [isError, setIsError] = useState(null);
       const [statusFilter, setStatusFilter] = useState("all");
@@ -37,7 +36,6 @@ export default function BlogTable() {
       const [page, setPage] = useState(1);
       const [isLoading, setIsLoading] = React.useState(true);
       const [hasMore, setHasMore] = React.useState(false);
-
       const list = useAsyncList({
             async load({ signal, cursor }) {
                   if (cursor) {
@@ -45,7 +43,7 @@ export default function BlogTable() {
                   }
 
                   try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?func=listpage=${cursor ?? 1}`, {
+                        const res = await fetch(cursor || `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=1`, {
                               signal
                         });
 
@@ -59,7 +57,7 @@ export default function BlogTable() {
                         setHasMore(json.next !== null);
 
                         return {
-                              items: [json.results],
+                              items: json.results,
                               cursor: json.next,
                         };
                   } catch (error) {
@@ -74,34 +72,13 @@ export default function BlogTable() {
                   }
             },
       });
-      // console.log("cursor-out", list);
+      console.log("getBlogData", list);
 
+      // console.log("cursor-out", list);
       const [loaderRef, scrollerRef] = useInfiniteScroll({ hasMore, onLoadMore: list.loadMore });
 
-      useEffect(() => {
-            if (list?.items.length > 0) {
-                  setColumns(list.items[0]?.columns || []);
-                  setTotalCount(list.items[0]?.totalCount || 0);
-                  setItemsList(prevItems => [
-                        ...prevItems,
-                        ...list.items.flatMap(item => item.items)
-                  ]);
-
-                  setFirstItem(list.items[0] || {});
-            } else {
-                  console.warn("No items found in response.");
-                  setItemsList([]);
-            }
-      }, [list.items, page, rowsPerPage]);
-
-
-
-      useEffect(() => {
-            setVisibleColumns(new Set(firstItem.INITIAL_VISIBLE_COLUMNS));
-      }, [firstItem]);
-
       const hasSearchFilter = Boolean(filterValue);
-
+      const itemsList = list.items;
       const headerColumns = React.useMemo(() => {
             if (visibleColumns === "all") return columns;
 
@@ -146,7 +123,7 @@ export default function BlogTable() {
             });
       }, [sortDescriptor, itemsList]);
 
-      const renderCell = useCallback((user, columnKey) => <TableCellCustom user={user} columnKey={columnKey} />, []);
+      const renderCell = useCallback((item, columnKey) => <TableCellCustom item={item} columnKey={columnKey} />, []);
 
       const onNextPage = React.useCallback(() => {
             if (page < pages) {

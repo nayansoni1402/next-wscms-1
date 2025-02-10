@@ -3,7 +3,30 @@ import PageTitle from '@/wsui/Common/PageTitle'
 import { Button } from '@nextui-org/react'
 import React from 'react'
 
-export default function page() {
+
+async function getBlogs() {
+      try {
+            const response = await fetch(process.env.NEXT_PUBLIC_BLOG_API_URL, {
+                  method: "GET",
+                  headers: {
+                        "Content-Type": "application/json"
+                  },
+            });
+
+            if (!response.ok) {
+                  throw new Error(`Error: ${response.status} - ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data; // Returns { results: { items }, next }
+      } catch (error) {
+            console.error("Failed to fetch blogs:", error.message);
+            return null;
+      }
+}
+
+export default async function page() {
+      const blogData = await getBlogs();
       return (
             <>
                   <div className="flex container p-0 pt-5 justify-between items-center">
@@ -16,7 +39,7 @@ export default function page() {
                   </div>
                   <div>Blog Card</div>
                   <div className="container p-0 mt-5 mb-5">
-                        <BlogTable />
+                        <BlogTable blogData={blogData} />
                   </div>
 
             </>
