@@ -13,7 +13,6 @@ import { useAsyncList } from "@react-stately/data";
 import AlertWithAction from "@/wsui/Common/Alert/AlertWithAction";
 import { statusOptions } from "@/wsui/Common/Table/commanData";
 import TableCellCustom from "@/wsui/Common/Table/TableCellCustom";
-import BottomContent from "@/wsui/Common/Table/BottomContent";
 import TopContent from "@/wsui/Common/Table/TopContent";
 
 export default function BlogTable() {
@@ -176,6 +175,8 @@ export default function BlogTable() {
       const topContent = React.useMemo(() => {
             return (
                   <TopContent
+                        selectedKeys={selectedKeys}
+                        filteredItems={filteredItems}
                         filterValue={filterValue}
                         onRowsPerPageChange={onRowsPerPageChange}
                         onClear={onClear}
@@ -195,22 +196,10 @@ export default function BlogTable() {
             onRowsPerPageChange,
             itemsList.length,
             onSearchChange,
+            selectedKeys,
             hasSearchFilter,
       ]);
 
-      const bottomContent = React.useMemo(() => {
-            return (
-                  <BottomContent
-                        selectedKeys={selectedKeys}
-                        filteredItems={filteredItems}
-                        setPage={setPage}
-                        page={page}
-                        pages={pages}
-                        onPreviousPage={onPreviousPage}
-                        onNextPage={onNextPage}
-                  />
-            );
-      }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
       if (list.error || isError) {
             return <AlertWithAction type="danger" desc={list.error || isError} />
@@ -218,9 +207,12 @@ export default function BlogTable() {
       return (
             <Table
                   isHeaderSticky
-                  aria-label={tableName}
-                  bottomContent={bottomContent}
-                  bottomContentPlacement="outside"
+                  // aria-label={tableName}
+                  // bottomContent={hasMore ? (
+                  //       <div className="flex w-full justify-center">
+                  //             <Spinner ref={loaderRef} color="white" />
+                  //       </div>
+                  // ) : null}
                   classNames={{
                         wrapper: "max-h-[682px]",
                   }}

@@ -10,8 +10,8 @@ import {
       User
 } from "@heroui/react";
 import { statusColorMap, statusMap } from "./commanData";
-import WsSvg, { VerticalDotsIcon } from "../WsSvg";
-import { Avatar, badge, Badge } from "@nextui-org/react";
+import WsSvg, { DeleteIcon, EditIcon, EyeIcon, VerticalDotsIcon } from "../WsSvg";
+import { Avatar, badge, Badge, Tooltip } from "@nextui-org/react";
 
 function TableCellCustom({ user, columnKey }) {
       const cellValue = user[columnKey];
@@ -36,7 +36,7 @@ function TableCellCustom({ user, columnKey }) {
                                     src: user.image
 
                               }}
-                              description={user.image_alt}
+                              description={user.category_name}
                               name={cellValue}
                         >
                         </User>
@@ -57,19 +57,22 @@ function TableCellCustom({ user, columnKey }) {
                   );
             case "actions":
                   return (
-                        <div className="relative flex justify-end items-center gap-2">
-                              <Dropdown>
-                                    <DropdownTrigger>
-                                          <Button isIconOnly size="sm" variant="light">
-                                                <VerticalDotsIcon className="text-default-300" />
-                                          </Button>
-                                    </DropdownTrigger>
-                                    <DropdownMenu>
-                                          <DropdownItem key="view">View</DropdownItem>
-                                          <DropdownItem key="edit">Edit</DropdownItem>
-                                          <DropdownItem key="delete">Delete</DropdownItem>
-                                    </DropdownMenu>
-                              </Dropdown>
+                        <div className="relative flex items-center gap-2">
+                              <Tooltip content="Visit Page">
+                                    <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                                          <EyeIcon />
+                                    </span>
+                              </Tooltip>
+                              <Tooltip color="warning" content="Edit Page">
+                                    <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                                          <EditIcon />
+                                    </span>
+                              </Tooltip>
+                              <Tooltip color="danger" content="Delete Page">
+                                    <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                                          <DeleteIcon />
+                                    </span>
+                              </Tooltip>
                         </div>
                   );
             default:

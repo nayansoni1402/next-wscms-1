@@ -5,7 +5,8 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@
 import { capitalize } from '@/lib/utils'
 import { statusOptions } from './commanData'
 
-export default function TopContent({ filterValue, onRowsPerPageChange, onClear, onSearchChange, statusFilter, setStatusFilter, visibleColumns, setVisibleColumns, itemsList, columns }) {
+export default function TopContent({ filterValue, onRowsPerPageChange, onClear, onSearchChange, statusFilter, setStatusFilter, visibleColumns, setVisibleColumns, itemsList, columns, selectedKeys,
+      filteredItems }) {
 
       return (
             <div className="flex flex-col gap-4">
@@ -68,7 +69,12 @@ export default function TopContent({ filterValue, onRowsPerPageChange, onClear, 
                         </div>
                   </div>
                   <div className="flex justify-between items-center">
-                        <span className="text-default-400 text-small">Total {itemsList.length} Data</span>
+                        <span className="w-[30%] text-small text-default-400">
+                              {selectedKeys === "all"
+                                    ? "All items selected"
+                                    : `${selectedKeys.size} of ${filteredItems.length} selected`}
+                        </span>
+                        {/* <span className="text-default-400 text-small">Total {itemsList.length} Data</span> */}
                         <label className="flex items-center text-default-400 text-small">
                               Rows per page:
                               <select

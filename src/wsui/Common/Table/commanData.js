@@ -1,7 +1,7 @@
 export const statusOptions = [
-      { name: "Active", uid: "active" },
-      { name: "Paused", uid: "paused" },
-      { name: "Vacation", uid: "vacation" },
+      { name: "Active", uid: 1 },
+      { name: "Disable", uid: 0 },
+      { name: "Pending", uid: 2 },
 ];
 
 export const statusColorMap = {
