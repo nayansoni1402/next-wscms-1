@@ -5,8 +5,8 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@
 import { capitalize } from '@/lib/utils'
 import { statusOptions } from './commanData'
 
-export default function TopContent({ filterValue, onRowsPerPageChange, onClear, onSearchChange, statusFilter, setStatusFilter, visibleColumns, setVisibleColumns, itemsList, columns, selectedKeys,
-      filteredItems }) {
+export default function TopContent({ filterValue, onClear, onSearchChange, statusFilter, setStatusFilter, visibleColumns, setVisibleColumns, columns, selectedKeys,
+      totalItems }) {
 
       return (
             <div className="flex flex-col gap-4">
@@ -72,10 +72,10 @@ export default function TopContent({ filterValue, onRowsPerPageChange, onClear, 
                         <span className="w-[30%] text-small text-default-400">
                               {selectedKeys === "all"
                                     ? "All items selected"
-                                    : `${selectedKeys.size} of ${filteredItems.length} selected`}
+                                    : `${selectedKeys.size} of ${totalItems} selected`}
                         </span>
                         {/* <span className="text-default-400 text-small">Total {itemsList.length} Data</span> */}
-                        <label className="flex items-center text-default-400 text-small">
+                        {/* <label className="flex items-center text-default-400 text-small">
                               Rows per page:
                               <select
                                     className="bg-transparent outline-none text-default-400 text-small"
@@ -85,7 +85,7 @@ export default function TopContent({ filterValue, onRowsPerPageChange, onClear, 
                                     <option value="100">100</option>
                                     <option value="150">150</option>
                               </select>
-                        </label>
+                        </label> */}
                   </div>
             </div>
       )

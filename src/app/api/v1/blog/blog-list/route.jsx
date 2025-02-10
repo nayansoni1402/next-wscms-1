@@ -5,7 +5,7 @@
 // npx prisma migrate deploy  --schema=prisma/schema.blog.prisma
 
 import { buildDynamicFilter } from "@/lib/helper/buildDynamicFilter";
-import { blogDb } from "@/lib/prismaClients";
+import { blogDb, CmsDb } from "@/lib/prismaClients";
 import { formatDateMoment } from "@/lib/utils";
 import { NextResponse } from "next/server";
 // import { VendorDetailSchema } from "@/lib/schema/vendorDetailSchema";
@@ -17,66 +17,66 @@ export async function GET(request) {
             const { searchParams } = new URL(request.url);
 
             const page = Math.max(parseInt(searchParams.get("page"), 10) || 1, 1);
-            const limit = Math.min(parseInt(searchParams.get("limit"), 10) || 20, 100);
+            const func = searchParams.get("func");
+            if (func == 'list') {
+                  
+            }
+            const limit = 20;
             const skip = (page - 1) * limit;
-
-            const searchKey = searchParams.get("search_key");
+            const searchKey = searchParams.get("search_key")?.trim() || null;
 
             const searchableColumns = ["id", "title"];
             const dynamicFilter = buildDynamicFilter(searchKey, searchableColumns);
 
-
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            // Fetch the transformed data with optimized query
-            const transformedData = await blogDb.blog.findMany({
-                  select: {
-                        id: true,
-                        ref_id: true,
-                        title: true,
-                        slug: true,
-                        image: true,
-                        image_alt: true,
-                        status: true,
-                        view: true,
-                        added_by: true,
-                        created_at: true,
-                        comments: {
-                              select: {
-                                    id: true,
-                                    name: true,
-                                    status: true,
-                                    created_at: true,
-                              },
-                              where: {
-                                    status: 0,
-                                    created_at: {
-                                          gte: thirtyDaysAgo,
+            const [transformedData, totalCount] = await Promise.all([
+                  blogDb.blog.findMany({
+                        select: {
+                              id: true,
+                              ref_id: true,
+                              title: true,
+                              slug: true,
+                              image: true,
+                              image_alt: true,
+                              status: true,
+                              view: true,
+                              added_by: true,
+                              created_at: true,
+                              comments: {
+                                    select: {
+                                          id: true,
+                                          name: true,
+                                          status: true,
+                                          created_at: true,
                                     },
-                              }
-                        },
-                        author: {
-                              select: {
-                                    id: true,
-                                    name: true,
+                                    where: {
+                                          status: 0,
+                                          created_at: {
+                                                gte: thirtyDaysAgo,
+                                          },
+                                    }
+                              },
+                              author: {
+                                    select: {
+                                          id: true,
+                                          name: true,
+                                    },
+                              },
+                              category: {
+                                    select: {
+                                          title: true,
+                                    },
                               },
                         },
-                        category: {
-                              select: {
-                                    title: true,
-                              },
-                        },
-                  },
-                  where: dynamicFilter,
-                  orderBy: { id: "desc" },
-                  skip,
-                  take: limit
-            });
-
-            const totalCount = await blogDb.blog.count({
-                  where: dynamicFilter,
-            })
+                        where: dynamicFilter,
+                        orderBy: { id: "desc" },
+                        skip,
+                        take: limit
+                  }),
+                  blogDb.blog.count({ where: dynamicFilter })
+            ]);
 
             const flattenData = (data) => {
                   return data.map(blog => ({
@@ -101,69 +101,40 @@ export async function GET(request) {
 
             const flattenedData = flattenData(transformedData);
 
-            let INITIAL_VISIBLE_COLUMNS = ["id", "added_by", "title", "status", "created_at", "actions"];
+            const COLUMN_NAMES = {
+                  id: "ID",
+                  title: "Title",
+                  image: "Image",
+                  status: "Status",
+                  added_by: "Added By"
+            };
 
-            const columns = Object.keys(flattenedData[0]).map((key) => {
-                  let columnName;
+            const columns = Object.keys(flattenedData[0] || {}).map((key) => ({
+                  name: COLUMN_NAMES[key] || key.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase()),
+                  uid: key,
+                  sortable: true
+            }));
 
-                  switch (key) {
-                        case "id":
-                              columnName = "ID";
-                              break;
-                        case "title":
-                              columnName = "Title";
-                              break;
-                        case "image":
-                              columnName = "Image";
-                              break;
-                        case "status":
-                              columnName = "Status";
-                              break;
-                        case "added_by":
-                              columnName = "Added By";
-                              break;
-                        default:
-                              columnName = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                  }
-
-                  return {
-                        name: columnName,
-                        uid: key,
-                        sortable: true,
-                  };
-            });
-
-            columns.push({
-                  name: "Actions",
-                  uid: "actions",
-            });
-
-            // const columns = [
-            //       { name: "ID", uid: "id", sortable: true },
-            //       { name: "NAME", uid: "name", sortable: true },
-            //       { name: "AGE", uid: "age", sortable: true },
-            //       { name: "ROLE", uid: "role", sortable: true },
-            //       { name: "TEAM", uid: "team" },
-            //       { name: "EMAIL", uid: "email" },
-            //       { name: "STATUS", uid: "status", sortable: true },
-            //       { name: "ACTIONS", uid: "actions" },
-            // ]
+            columns.push({ name: "Actions", uid: "actions" });
 
             const response = {
                   items: flattenedData,
-                  INITIAL_VISIBLE_COLUMNS: INITIAL_VISIBLE_COLUMNS,
+                  INITIAL_VISIBLE_COLUMNS: ["id", "added_by", "title", "status", "created_at", "actions"],
                   columns: columns,
-                  selectedKeys: {},
-                  isLoading: false,
                   totalCount: totalCount,
-                  loadingState: "idle",
-                  filterText: ""
             };
-            return NextResponse.json([response]);
+
+            const finalres = {
+                  results: response,
+                  next: page * limit < totalCount ? page + 1 : null,
+            }
+            return NextResponse.json(finalres);
       } catch (error) {
+            await blogDb.$disconnect();
+            await CmsDb.$disconnect();
             console.error("Error fetching details:", error);
             return NextResponse.json(
-                  { error: "Internal Server Error" },
+                  { error: error.message },
                   { status: 500 }
             );
       }

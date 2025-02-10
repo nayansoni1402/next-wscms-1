@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
       Table,
       TableHeader,
@@ -14,6 +14,7 @@ import AlertWithAction from "@/wsui/Common/Alert/AlertWithAction";
 import { statusOptions } from "@/wsui/Common/Table/commanData";
 import TableCellCustom from "@/wsui/Common/Table/TableCellCustom";
 import TopContent from "@/wsui/Common/Table/TopContent";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 
 export default function BlogTable() {
 
@@ -30,20 +31,22 @@ export default function BlogTable() {
       const [rowsPerPage, setRowsPerPage] = useState(50);
       const tableName = 'blog';
       const [sortDescriptor, setSortDescriptor] = useState({
-            column: "age",
+            column: "title",
             direction: "ascending",
       });
       const [page, setPage] = useState(1);
-
+      const [isLoading, setIsLoading] = React.useState(true);
+      const [hasMore, setHasMore] = React.useState(false);
 
       const list = useAsyncList({
-            async load({ signal }) {
-                  const controller = new AbortController();
-                  const { signal: abortSignal } = controller;
+            async load({ signal, cursor }) {
+                  if (cursor) {
+                        setIsLoading(false);
+                  }
 
                   try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=${page}&limit=${rowsPerPage}`, {
-                              signal: abortSignal
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?func=listpage=${cursor ?? 1}`, {
+                              signal
                         });
 
                         if (!res.ok) {
@@ -51,32 +54,39 @@ export default function BlogTable() {
                         }
 
                         const json = await res.json();
-                        return { items: json || [] };
+                        console.log(cursor);
+                        console.log(json.results);
+                        setHasMore(json.next !== null);
+
+                        return {
+                              items: [json.results],
+                              cursor: json.next,
+                        };
                   } catch (error) {
                         if (abortSignal.aborted) {
-                              setIsError(error);
+                              setIsError(error.message);
                               console.warn("Request aborted:", error);
                               return { items: [] };
                         }
-                        setIsError(error);
+                        setIsError(error.message);
                         console.error("Error loading data:", error);
                         return { items: [] };
                   }
             },
-            getKey: () => `${page}-${rowsPerPage}`
       });
+      // console.log("cursor-out", list);
 
-      useEffect(() => {
-            list.reload();
-      }, [page, rowsPerPage]);
+      const [loaderRef, scrollerRef] = useInfiniteScroll({ hasMore, onLoadMore: list.loadMore });
 
-      // Effect hook to log items
       useEffect(() => {
             if (list?.items.length > 0) {
-                  console.log("Setting Items:", list.items[0].items);
                   setColumns(list.items[0]?.columns || []);
                   setTotalCount(list.items[0]?.totalCount || 0);
-                  setItemsList([...list.items[0]?.items] || []);
+                  setItemsList(prevItems => [
+                        ...prevItems,
+                        ...list.items.flatMap(item => item.items)
+                  ]);
+
                   setFirstItem(list.items[0] || {});
             } else {
                   console.warn("No items found in response.");
@@ -88,7 +98,6 @@ export default function BlogTable() {
 
       useEffect(() => {
             setVisibleColumns(new Set(firstItem.INITIAL_VISIBLE_COLUMNS));
-            console.log("First Item:", firstItem);
       }, [firstItem]);
 
       const hasSearchFilter = Boolean(filterValue);
@@ -137,9 +146,7 @@ export default function BlogTable() {
             });
       }, [sortDescriptor, itemsList]);
 
-      const renderCell = React.useCallback((user, columnKey) => {
-            return <TableCellCustom user={user} columnKey={columnKey} />
-      }, []);
+      const renderCell = useCallback((user, columnKey) => <TableCellCustom user={user} columnKey={columnKey} />, []);
 
       const onNextPage = React.useCallback(() => {
             if (page < pages) {
@@ -176,16 +183,14 @@ export default function BlogTable() {
             return (
                   <TopContent
                         selectedKeys={selectedKeys}
-                        filteredItems={filteredItems}
+                        totalItems={totalCount}
                         filterValue={filterValue}
-                        onRowsPerPageChange={onRowsPerPageChange}
                         onClear={onClear}
                         onSearchChange={onSearchChange}
                         statusFilter={statusFilter}
                         setStatusFilter={setStatusFilter}
                         visibleColumns={visibleColumns}
                         setVisibleColumns={setVisibleColumns}
-                        itemsList={itemsList}
                         columns={columns}
                   />
             );
@@ -193,8 +198,6 @@ export default function BlogTable() {
             filterValue,
             statusFilter,
             visibleColumns,
-            onRowsPerPageChange,
-            itemsList.length,
             onSearchChange,
             selectedKeys,
             hasSearchFilter,
@@ -207,15 +210,16 @@ export default function BlogTable() {
       return (
             <Table
                   isHeaderSticky
-                  // aria-label={tableName}
-                  // bottomContent={hasMore ? (
-                  //       <div className="flex w-full justify-center">
-                  //             <Spinner ref={loaderRef} color="white" />
-                  //       </div>
-                  // ) : null}
+                  aria-label={tableName}
+                  bottomContent={hasMore ? (
+                        <div className="flex w-full justify-center">
+                              <Spinner ref={loaderRef} />
+                        </div>
+                  ) : null}
                   classNames={{
                         wrapper: "max-h-[682px]",
                   }}
+                  baseRef={scrollerRef}
                   selectedKeys={selectedKeys}
                   selectionMode="multiple"
                   sortDescriptor={sortDescriptor}

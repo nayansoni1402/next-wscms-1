@@ -8,11 +8,11 @@ export default function page() {
             <>
                   <div className="flex container p-0 pt-5 justify-between items-center">
                         <PageTitle title={"Blog List"} />
-                        <div className="flex justify-end">
+                        {/* <div className="flex justify-end">
                               <Button className="bg-ws-primary-500 text-background rounded" size="md">
                                     Add Category
                               </Button>
-                        </div>
+                        </div> */}
                   </div>
                   <div>Blog Card</div>
                   <div className="container p-0 mt-5 mb-5">
