@@ -34,6 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< Updated upstream
 .env
 /generated
 package-lock.json
+=======
+/generated
+>>>>>>> Stashed changes
