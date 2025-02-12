@@ -7,7 +7,7 @@ export async function GET(request) {
       try {
             const { searchParams } = new URL(request.url);
             const page = parseInt(searchParams.get("page") || "1", 10);
-            const limit = 100;
+            const limit = 10;
             const skip = (page - 1) * limit;
 
 
@@ -83,8 +83,12 @@ export async function GET(request) {
                   author_name: blog.author?.name || "Unknown",
                   comments_count: blog.comments.length,
                   category_name: blog.category?.title || "Uncategorized",
-                  category_name: blog.category?.title || "Uncategorized",
+                  actions: {
+                        'edit': `/blog/blog-list/${blog.id}`,
+                        'view': `${process.env.NEXT_PUBLIC_BLOG_WEB_URL}${blog.slug}`,
+                  },
             }));
+
 
             const nextPageLink = nextPage == null ? null : `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=${nextPage}`;
             return NextResponse.json({

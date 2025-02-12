@@ -77,6 +77,7 @@ export default function BlogTable({ blogData }) {
             let filteredBlogs = [...itemsList];
 
             if (filterValue) {
+                  console.log(filterValue);
                   filteredBlogs = filteredBlogs.filter((blog) =>
                         blog.title.toLowerCase().includes(filterValue.toLowerCase())
                   );

@@ -7,15 +7,16 @@ import {
       DropdownMenu,
       DropdownItem,
       Chip,
-      User
+      User,
+      // Link
 } from "@heroui/react";
 import { statusColorMap, statusMap } from "./commanData";
-import WsSvg, { DeleteIcon, EditIcon, EyeIcon, NotificationIcon, VerticalDotsIcon } from "../WsSvg";
-import { Avatar, badge, Badge, Tooltip } from "@nextui-org/react";
+import { DeleteIcon, EditIcon, EyeIcon, NotificationIcon } from "../WsSvg";
+import { Tooltip } from "@nextui-org/react";
+import Link from "next/link";
 
 function TableCellCustom({ item, columnKey }) {
       const cellValue = item[columnKey];
-
       switch (columnKey) {
             case "added_by":
                   return (
@@ -82,19 +83,19 @@ function TableCellCustom({ item, columnKey }) {
                   return (
                         <div className="relative flex items-center gap-2">
                               <Tooltip content="Visit Page">
-                                    <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                                    <Link href={cellValue.view ?? '#'} className="text-lg text-default-400 cursor-pointer active:opacity-50">
                                           <EyeIcon />
-                                    </span>
+                                    </Link>
                               </Tooltip>
                               <Tooltip color="warning" content="Edit Page">
-                                    <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                                    <Link href={cellValue.edit ?? '#'} className="text-lg text-default-400 cursor-pointer active:opacity-50">
                                           <EditIcon />
-                                    </span>
+                                    </Link>
                               </Tooltip>
                               <Tooltip color="danger" content="Delete Page">
-                                    <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                                    <Link href={cellValue.delete ?? '#'} className="text-lg text-danger cursor-pointer active:opacity-50">
                                           <DeleteIcon />
-                                    </span>
+                                    </Link>
                               </Tooltip>
                         </div>
                   );
