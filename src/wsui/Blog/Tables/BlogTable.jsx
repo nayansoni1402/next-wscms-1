@@ -48,7 +48,7 @@ export default function BlogTable({ blogData }) {
                         }
 
                         const json = await res.json();
-                        setHasMore(json.next == null);
+                        setHasMore(json.next != null);
 
                         return {
                               items: json.results,
