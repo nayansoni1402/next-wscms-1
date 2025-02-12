@@ -78,7 +78,7 @@ export default function Header() {
                         <NavbarMenuToggle className="sm:hidden" />
                         <NavbarBrand>
                               <Link href={config.herf} className="flex items-center gap-2">
-                                    <Image src={config.image} alt="Wooden Street" width={140} height={40} className="h-10 w-auto" />
+                                    <Image src={config.image} alt="Wooden Street LOGO" priority width={140} height={40} style={{ width: 'auto', height: 'auto' }} className="h-10 w-auto" />
                               </Link>
                         </NavbarBrand>
                   </NavbarContent>

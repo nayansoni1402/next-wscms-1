@@ -1,12 +1,12 @@
-'use client';
-import React, { useState, useCallback } from "react";
+"use client";
+import React, { useState, useCallback, useMemo } from "react";
 import {
       Table,
       TableHeader,
       TableColumn,
       TableBody,
       TableRow,
-      TableCell
+      TableCell,
 } from "@heroui/react";
 import { Spinner } from "@nextui-org/react";
 import { useAsyncList } from "@react-stately/data";
@@ -16,44 +16,34 @@ import TableCellCustom from "@/wsui/Common/Table/TableCellCustom";
 import TopContent from "@/wsui/Common/Table/TopContent";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 
-
 export default function BlogTable({ blogData }) {
       const [filterValue, setFilterValue] = useState("");
       const [selectedKeys, setSelectedKeys] = useState(new Set([]));
-      const [visibleColumns, setVisibleColumns] = useState(new Set(blogData.INITIAL_VISIBLE_COLUMNS));
-      const [columns, setColumns] = useState(blogData.columns);
-      // const [itemsList, setItemsList] = useState([]);
-      const [totalCount, setTotalCount] = useState(blogData.totalCount);
+      const [visibleColumns, setVisibleColumns] = useState(
+            new Set(blogData.INITIAL_VISIBLE_COLUMNS)
+      );
 
+      const columns = blogData.columns;
+      const totalCount = blogData.totalCount;
       const [isError, setIsError] = useState(null);
       const [statusFilter, setStatusFilter] = useState("all");
-      const [rowsPerPage, setRowsPerPage] = useState(50);
-      const tableName = 'blog';
-      const [sortDescriptor, setSortDescriptor] = useState({
-            column: "title",
-            direction: "ascending",
-      });
-      const [page, setPage] = useState(1);
-      const [isLoading, setIsLoading] = React.useState(true);
-      const [hasMore, setHasMore] = React.useState(false);
+      const [hasMore, setHasMore] = useState(false);
+      const tableName = "blog";
+
+      // ✅ Fix: Ensure Hooks are not conditionally rendered
       const list = useAsyncList({
             async load({ signal, cursor }) {
-                  if (cursor) {
-                        setIsLoading(false);
-                  }
-
                   try {
-                        const res = await fetch(cursor || `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=1`, {
-                              signal
-                        });
+                        const res = await fetch(
+                              cursor || `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=1`,
+                              { signal }
+                        );
 
                         if (!res.ok) {
                               throw new Error(`HTTP error! Status: ${res.status}`);
                         }
 
                         const json = await res.json();
-                        console.log(cursor);
-                        console.log(json.results);
                         setHasMore(json.next !== null);
 
                         return {
@@ -61,102 +51,55 @@ export default function BlogTable({ blogData }) {
                               cursor: json.next,
                         };
                   } catch (error) {
-                        if (abortSignal.aborted) {
+                        if (signal.aborted) {
                               setIsError(error.message);
-                              console.warn("Request aborted:", error);
                               return { items: [] };
                         }
                         setIsError(error.message);
-                        console.error("Error loading data:", error);
                         return { items: [] };
                   }
             },
       });
-      console.log("getBlogData", list);
 
-      // console.log("cursor-out", list);
-      const [loaderRef, scrollerRef] = useInfiniteScroll({ hasMore, onLoadMore: list.loadMore });
+      const [loaderRef, scrollerRef] = useInfiniteScroll({
+            hasMore,
+            onLoadMore: list.loadMore,
+      });
+
+      const itemsList = list.items;
 
       const hasSearchFilter = Boolean(filterValue);
-      const itemsList = list.items;
-      const headerColumns = React.useMemo(() => {
-            if (visibleColumns === "all") return columns;
+      const headerColumns = useMemo(
+            () => columns.filter((column) => visibleColumns.has(column.uid)),
+            [visibleColumns, columns]
+      );
 
-            return columns.filter((column) => Array.from(visibleColumns).includes(column.uid));
-      }, [visibleColumns]);
-
-      const filteredItems = React.useMemo(() => {
+      // ✅ Fix: Ensure filter logic works correctly
+      const filteredItems = useMemo(() => {
             let filteredUsers = [...itemsList];
 
             if (hasSearchFilter) {
                   filteredUsers = filteredUsers.filter((user) =>
-                        user.title.toLowerCase().includes(filterValue.toLowerCase()),
+                        user.title.toLowerCase().includes(filterValue.toLowerCase())
                   );
             }
-            if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+
+            if (statusFilter !== "all") {
                   filteredUsers = filteredUsers.filter((user) =>
-                        Array.from(statusFilter).includes(user.status),
+                        statusFilter.includes(user.status)
                   );
             }
 
             return filteredUsers;
-      }, [itemsList, filterValue, statusFilter, page]);
+      }, [itemsList, filterValue, statusFilter]);
 
-      const pages = Math.ceil(totalCount / rowsPerPage);
-
-      const items = React.useMemo(() => {
-            const start = (page - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-
-            return filteredItems.slice(start, end);
-      }, [page, filteredItems, rowsPerPage]);
-
-      const sortedItems = React.useMemo(() => {
-            if (!itemsList.length) return [];
-
-            return [...itemsList].sort((a, b) => {
-                  const first = a[sortDescriptor.column];
-                  const second = b[sortDescriptor.column];
-                  const cmp = first < second ? -1 : first > second ? 1 : 0;
-
-                  return sortDescriptor.direction === "descending" ? -cmp : cmp;
-            });
-      }, [sortDescriptor, itemsList]);
-
-      const renderCell = useCallback((item, columnKey) => <TableCellCustom item={item} columnKey={columnKey} />, []);
-
-      const onNextPage = React.useCallback(() => {
-            if (page < pages) {
-                  setPage(page + 1);
-            }
-      }, [page, pages]);
-
-      const onPreviousPage = React.useCallback(() => {
-            if (page > 1) {
-                  setPage(page - 1);
-            }
-      }, [page]);
-
-      const onRowsPerPageChange = React.useCallback((e) => {
-            setRowsPerPage(Number(e.target.value));
-            setPage(1);
+      const onSearchChange = useCallback((value) => {
+            setFilterValue(value || "");
       }, []);
 
-      const onSearchChange = React.useCallback((value) => {
-            if (value) {
-                  setFilterValue(value);
-                  setPage(1);
-            } else {
-                  setFilterValue("");
-            }
-      }, []);
+      const onClear = useCallback(() => setFilterValue(""), []);
 
-      const onClear = React.useCallback(() => {
-            setFilterValue("");
-            setPage(1);
-      }, []);
-
-      const topContent = React.useMemo(() => {
+      const topContent = useMemo(() => {
             return (
                   <TopContent
                         selectedKeys={selectedKeys}
@@ -177,22 +120,44 @@ export default function BlogTable({ blogData }) {
             visibleColumns,
             onSearchChange,
             selectedKeys,
-            hasSearchFilter,
+            totalCount,
       ]);
 
+      const renderCell = useCallback(
+            (item, columnKey) => <TableCellCustom item={item} columnKey={columnKey} />,
+            []
+      );
 
-      if (list.error || isError) {
-            return <AlertWithAction type="danger" desc={list.error || isError} />
+      const [sortDescriptor, setSortDescriptor] = useState({
+            column: "title",
+            direction: "ascending",
+      });
+
+      // ✅ Fix: Sorting logic improvement
+      const sortedItems = useMemo(() => {
+            return [...filteredItems].sort((a, b) => {
+                  const first = a[sortDescriptor.column];
+                  const second = b[sortDescriptor.column];
+                  const cmp = first < second ? -1 : first > second ? 1 : 0;
+                  return sortDescriptor.direction === "descending" ? -cmp : cmp;
+            });
+      }, [sortDescriptor, filteredItems]);
+
+      if (isError) {
+            return <AlertWithAction type="danger" desc={isError} />;
       }
+
       return (
             <Table
                   isHeaderSticky
                   aria-label={tableName}
-                  bottomContent={hasMore ? (
-                        <div className="flex w-full justify-center">
-                              <Spinner ref={loaderRef} />
-                        </div>
-                  ) : null}
+                  bottomContent={
+                        hasMore ? (
+                              <div className="flex w-full justify-center">
+                                    <Spinner ref={loaderRef} />
+                              </div>
+                        ) : null
+                  }
                   classNames={{
                         wrapper: "max-h-[682px]",
                   }}
@@ -217,7 +182,12 @@ export default function BlogTable({ blogData }) {
                         )}
                   </TableHeader>
 
-                  <TableBody emptyContent={"No users found"} items={sortedItems} isLoading={list.isLoading} loadingContent={<Spinner label="Loading..." />}>
+                  <TableBody
+                        emptyContent={"No users found"}
+                        items={sortedItems}
+                        isLoading={list.isLoading}
+                        loadingContent={<Spinner label="Loading..." />}
+                  >
                         {(item) => (
                               <TableRow key={item.id}>
                                     {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}

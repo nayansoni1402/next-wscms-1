@@ -74,18 +74,6 @@ export default function TopContent({ filterValue, onClear, onSearchChange, statu
                                     ? "All items selected"
                                     : `${selectedKeys.size} of ${totalItems} selected`}
                         </span>
-                        {/* <span className="text-default-400 text-small">Total {itemsList.length} Data</span> */}
-                        {/* <label className="flex items-center text-default-400 text-small">
-                              Rows per page:
-                              <select
-                                    className="bg-transparent outline-none text-default-400 text-small"
-                                    onChange={onRowsPerPageChange}
-                              >
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="150">150</option>
-                              </select>
-                        </label> */}
                   </div>
             </div>
       )

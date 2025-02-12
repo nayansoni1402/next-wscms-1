@@ -18,15 +18,12 @@ export async function GET(request) {
             const COLUMN_NAMES = {
                   id: "ID",
                   title: "Title",
-                  image: "Image",
                   status: "Status",
                   added_by: "Added By",
                   ref_id: "Ref id",
                   image_alt: "Image alt",
                   view: "View",
-                  author_id: "Author id",
                   author_name: "Author name",
-                  comments_count: "Comments Count",
             };
 
             const totalCount = await blogDb.blog.count();

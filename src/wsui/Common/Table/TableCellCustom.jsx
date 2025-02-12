@@ -70,8 +70,6 @@ function TableCellCustom({ item, columnKey }) {
                   return (
                         <div className="flex flex-col">
                               <p className="text-bold text-small capitalize">{cellValue}</p>
-                              <p className="text-bold text-tiny capitalize text-default-400">{item.team}</p>
-                              {item.comments_count != 0 && <Badge color="danger" content={item.comments_count} shape="circle" />}
                         </div>
                   );
             case "status":
