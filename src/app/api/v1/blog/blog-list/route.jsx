@@ -1,24 +1,25 @@
-import { buildDynamicFilter } from "@/lib/helper/buildDynamicFilter";
+import { buildDynamicFilter, buildDynamicFilterAvd } from "@/lib/helper/buildDynamicFilter";
 import { blogDb, CmsDb } from "@/lib/prismaClients";
 import { formatDateMoment } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
+export async function POST(request) {
       try {
-            const { searchParams } = new URL(request.url);
-            const page = parseInt(searchParams.get("page") || "1", 10);
+            const { page, filter } = await request.json();
+
             const limit = 10;
             const skip = (page - 1) * limit;
-
-
-            const searchKey = searchParams.get("search_key")?.trim() || null;
-            const searchableColumns = ["id", "title"];
-            const dynamicFilter = buildDynamicFilter(searchKey, searchableColumns);
+            const dynamicFilter = buildDynamicFilterAvd(filter || []);
+            console.log(dynamicFilter);
+            // const searchableColumns = ["id", "title"];
+            // const dynamicFilter = buildDynamicFilter(searchKey, searchableColumns);
 
             const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 300);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            const totalCount = await blogDb.blog.count();
+            const totalCount = await blogDb.blog.count({
+                  where: dynamicFilter
+            });
             const nextPage = page * limit < totalCount ? page + 1 : null;
 
             const blogs = await blogDb.blog.findMany({
@@ -93,7 +94,7 @@ export async function GET(request) {
             const nextPageLink = nextPage == null ? null : `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=${nextPage}`;
             return NextResponse.json({
                   results: items,
-                  next: nextPageLink,
+                  next: nextPage == null ? null : nextPage,
             });
 
       } catch (error) {

@@ -14,6 +14,7 @@ import AlertWithAction from "@/wsui/Common/Alert/AlertWithAction";
 import TableCellCustom from "@/wsui/Common/Table/TableCellCustom";
 import TopContent from "@/wsui/Common/Table/TopContent";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
+import { fetchData } from "@/lib/apiCall";
 
 export default function BlogTable({ blogData }) {
       const [filterValue, setFilterValue] = useState("");
@@ -33,26 +34,20 @@ export default function BlogTable({ blogData }) {
       const list = useAsyncList({
             async load({ signal, cursor }) {
                   try {
-                        // const queryParams = new URLSearchParams();
-                        // if (statusFilter) {
-                        //       console.log(statusFilter);
-                        //       queryParams.append("status", statusFilter);
-                        // }
-                        const res = await fetch(
-                              cursor || `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=1`,
-                              { signal }
-                        );
 
-                        if (!res.ok) {
-                              throw new Error(`HTTP error! Status: ${res.status}`);
-                        }
+                        const payload = {
+                              page: cursor ?? 1,
+                              filter: [
+                                    // { column: "title", operator: "LIKE", value: "%10+%", connector: "OR" },
+                                    { column: "status", operator: "IN", value: [0, 2], connector: "OR" },
+                              ],
+                        };
 
-                        const json = await res.json();
-                        setHasMore(json.next != null);
-
+                        const res = await fetchData("/blog-list", "POST", payload, true);
+                        setHasMore(res.next != null);
                         return {
-                              items: json.results,
-                              cursor: json.next,
+                              items: res.results,
+                              cursor: res.next,
                         };
                   } catch (error) {
                         if (signal.aborted) {
@@ -130,10 +125,7 @@ export default function BlogTable({ blogData }) {
             totalCount,
       ]);
 
-      const renderCell = useCallback(
-            (item, columnKey) => <TableCellCustom item={item} columnKey={columnKey} />,
-            []
-      );
+      const renderCell = useCallback((item, columnKey) => <TableCellCustom item={item} columnKey={columnKey} />, []);
 
       const [sortDescriptor, setSortDescriptor] = useState({
             column: "title",

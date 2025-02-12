@@ -347,3 +347,13 @@ export const NotificationIcon = ({ size, height, width, ...props }) => {
             </svg>
       );
 };
+
+export const FilterIcon = ({ size = 24, width, height, ...props }) => {
+      return (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 8.25L1.5 12L6 15.75" stroke="#515151" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 8.25L22.5 12L18 15.75" stroke="#515151" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 3.75L9 20.25" stroke="#515151" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+      );
+};
