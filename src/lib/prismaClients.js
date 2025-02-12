@@ -63,6 +63,7 @@ async function getUserDetails(userId) {
             // console.log(userDetails);
             return userDetails;
       } catch (error) {
+            await CmsDb.$disconnect();
             console.error("Error fetching user details:", error);
             throw new Error("Could not fetch user details");
       }

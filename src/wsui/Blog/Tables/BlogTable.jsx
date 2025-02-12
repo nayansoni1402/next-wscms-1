@@ -11,7 +11,6 @@ import {
 import { Spinner } from "@nextui-org/react";
 import { useAsyncList } from "@react-stately/data";
 import AlertWithAction from "@/wsui/Common/Alert/AlertWithAction";
-import { statusOptions } from "@/wsui/Common/Table/commanData";
 import TableCellCustom from "@/wsui/Common/Table/TableCellCustom";
 import TopContent from "@/wsui/Common/Table/TopContent";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
@@ -26,11 +25,11 @@ export default function BlogTable({ blogData }) {
       const columns = blogData.columns;
       const totalCount = blogData.totalCount;
       const [isError, setIsError] = useState(null);
-      const [statusFilter, setStatusFilter] = useState("all");
+      const [statusFilter, setStatusFilter] = useState(new Set(["1"])); // 🛠️ Ensure it's a Set
       const [hasMore, setHasMore] = useState(false);
       const tableName = "blog";
 
-      // ✅ Fix: Ensure Hooks are not conditionally rendered
+      // ✅ Ensure Hooks are not conditionally rendered
       const list = useAsyncList({
             async load({ signal, cursor }) {
                   try {
@@ -68,29 +67,28 @@ export default function BlogTable({ blogData }) {
 
       const itemsList = list.items;
 
-      const hasSearchFilter = Boolean(filterValue);
       const headerColumns = useMemo(
             () => columns.filter((column) => visibleColumns.has(column.uid)),
             [visibleColumns, columns]
       );
 
-      // ✅ Fix: Ensure filter logic works correctly
+      // ✅ Fix filtering logic
       const filteredItems = useMemo(() => {
-            let filteredUsers = [...itemsList];
+            let filteredBlogs = [...itemsList];
 
-            if (hasSearchFilter) {
-                  filteredUsers = filteredUsers.filter((user) =>
-                        user.title.toLowerCase().includes(filterValue.toLowerCase())
+            if (filterValue) {
+                  filteredBlogs = filteredBlogs.filter((blog) =>
+                        blog.title.toLowerCase().includes(filterValue.toLowerCase())
                   );
             }
 
-            if (statusFilter !== "all") {
-                  filteredUsers = filteredUsers.filter((user) =>
-                        statusFilter.includes(user.status)
+            if (statusFilter.size > 0) {
+                  filteredBlogs = filteredBlogs.filter((blog) =>
+                        statusFilter.has(String(blog.status))
                   );
             }
 
-            return filteredUsers;
+            return filteredBlogs;
       }, [itemsList, filterValue, statusFilter]);
 
       const onSearchChange = useCallback((value) => {
@@ -133,13 +131,14 @@ export default function BlogTable({ blogData }) {
             direction: "ascending",
       });
 
-      // ✅ Fix: Sorting logic improvement
+      // ✅ Fix sorting logic
       const sortedItems = useMemo(() => {
             return [...filteredItems].sort((a, b) => {
-                  const first = a[sortDescriptor.column];
-                  const second = b[sortDescriptor.column];
-                  const cmp = first < second ? -1 : first > second ? 1 : 0;
-                  return sortDescriptor.direction === "descending" ? -cmp : cmp;
+                  const first = a[sortDescriptor.column] || "";
+                  const second = b[sortDescriptor.column] || "";
+                  return sortDescriptor.direction === "descending"
+                        ? second.localeCompare(first)
+                        : first.localeCompare(second);
             });
       }, [sortDescriptor, filteredItems]);
 
@@ -156,14 +155,18 @@ export default function BlogTable({ blogData }) {
                               <div className="flex w-full justify-center">
                                     <Spinner ref={loaderRef} />
                               </div>
-                        ) : null
+                        ) : (
+                              <div className="flex w-full justify-center text-gray-500 text-sm py-2">
+                                    🚀 You've reached the end!
+                              </div>
+                        )
                   }
                   classNames={{
                         wrapper: "max-h-[682px]",
                   }}
                   baseRef={scrollerRef}
                   selectedKeys={selectedKeys}
-                  selectionMode="multiple"
+                  // selectionMode="multiple"
                   sortDescriptor={sortDescriptor}
                   topContent={topContent}
                   topContentPlacement="outside"
@@ -183,14 +186,16 @@ export default function BlogTable({ blogData }) {
                   </TableHeader>
 
                   <TableBody
-                        emptyContent={"No users found"}
+                        emptyContent={"No blogs found"}
                         items={sortedItems}
                         isLoading={list.isLoading}
                         loadingContent={<Spinner label="Loading..." />}
                   >
                         {(item) => (
                               <TableRow key={item.id}>
-                                    {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                                    {(columnKey) => (
+                                          <TableCell>{renderCell(item, columnKey)}</TableCell>
+                                    )}
                               </TableRow>
                         )}
                   </TableBody>

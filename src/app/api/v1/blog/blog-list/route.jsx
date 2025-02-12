@@ -83,11 +83,13 @@ export async function GET(request) {
                   author_name: blog.author?.name || "Unknown",
                   comments_count: blog.comments.length,
                   category_name: blog.category?.title || "Uncategorized",
+                  category_name: blog.category?.title || "Uncategorized",
             }));
 
+            const nextPageLink = nextPage == null ? null : `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=${nextPage}`;
             return NextResponse.json({
                   results: items,
-                  next: `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=${nextPage}`,
+                  next: nextPageLink,
             });
 
       } catch (error) {
