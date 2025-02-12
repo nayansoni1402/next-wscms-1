@@ -33,6 +33,11 @@ export default function BlogTable({ blogData }) {
       const list = useAsyncList({
             async load({ signal, cursor }) {
                   try {
+                        // const queryParams = new URLSearchParams();
+                        // if (statusFilter) {
+                        //       console.log(statusFilter);
+                        //       queryParams.append("status", statusFilter);
+                        // }
                         const res = await fetch(
                               cursor || `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=1`,
                               { signal }
@@ -43,7 +48,7 @@ export default function BlogTable({ blogData }) {
                         }
 
                         const json = await res.json();
-                        setHasMore(json.next !== null);
+                        setHasMore(json.next == null);
 
                         return {
                               items: json.results,
@@ -89,6 +94,9 @@ export default function BlogTable({ blogData }) {
                   );
             }
 
+            if (filteredBlogs.length > 0) {
+                  // list.reload();
+            }
             return filteredBlogs;
       }, [itemsList, filterValue, statusFilter]);
 
