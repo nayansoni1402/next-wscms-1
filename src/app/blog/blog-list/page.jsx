@@ -1,3 +1,4 @@
+import DashboardStats from '@/wsui/Blog/ DashboardStats';
 import BlogTable from '@/wsui/Blog/Tables/BlogTable'
 import PageTitle from '@/wsui/Common/PageTitle'
 import { Button } from '@nextui-org/react'
@@ -37,8 +38,8 @@ export default async function page() {
                               </Button>
                         </div> */}
                   </div>
-                  <div>Blog Card</div>
                   <div className="container p-0 mt-5 mb-5">
+                  <DashboardStats />
                         <BlogTable blogData={blogData} />
                   </div>
 

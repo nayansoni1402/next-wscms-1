@@ -67,9 +67,9 @@ export default function TopContent({ filterValue, onClear, onSearchChange, statu
                               </Dropdown>
                               {/* Advance Filter */}
                               <FilterSideBar />
-                              <Button color="primary" endContent={<PlusIcon />} className="bg-ws-primary-500">
-                                    Add New
-                              </Button>
+                              {/* <Button color="primary" endContent={<PlusIcon />} className="bg-ws-primary-500">
+                                    Clone
+                              </Button> */}
                         </div>
                   </div>
                   <div className="flex justify-between items-center">

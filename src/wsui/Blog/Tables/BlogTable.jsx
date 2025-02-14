@@ -39,7 +39,7 @@ export default function BlogTable({ blogData }) {
                               page: cursor ?? 1,
                               filter: [
                                     // { column: "title", operator: "LIKE", value: "%10+%", connector: "OR" },
-                                    { column: "status", operator: "IN", value: [0, 2], connector: "OR" },
+                                    // { column: "status", operator: "IN", value: [0, 2], connector: "OR" },
                               ],
                         };
 
@@ -135,13 +135,23 @@ export default function BlogTable({ blogData }) {
       // ✅ Fix sorting logic
       const sortedItems = useMemo(() => {
             return [...filteredItems].sort((a, b) => {
-                  const first = a[sortDescriptor.column] || "";
-                  const second = b[sortDescriptor.column] || "";
+                  const first = a[sortDescriptor.column];
+                  const second = b[sortDescriptor.column];
+
+                  if (typeof first === "number" && typeof second === "number") {
+                        return sortDescriptor.direction === "descending"
+                              ? second - first
+                              : first - second;
+                  }
+
+                  const firstStr = String(first || "");
+                  const secondStr = String(second || "");
                   return sortDescriptor.direction === "descending"
-                        ? second.localeCompare(first)
-                        : first.localeCompare(second);
+                        ? secondStr.localeCompare(firstStr)
+                        : firstStr.localeCompare(secondStr);
             });
       }, [sortDescriptor, filteredItems]);
+
 
       if (isError) {
             return <AlertWithAction type="danger" desc={isError} />;
@@ -173,6 +183,7 @@ export default function BlogTable({ blogData }) {
                   topContentPlacement="outside"
                   onSelectionChange={setSelectedKeys}
                   onSortChange={setSortDescriptor}
+                  color={'warning'}
             >
                   <TableHeader columns={headerColumns}>
                         {(column) => (
