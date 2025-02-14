@@ -9,6 +9,7 @@ import { ArrowBigLeft, ArrowLeft, ChevronDown, DropletIcon } from 'lucide-react'
 import { statusColorMap, statusMap, statusOptions } from '@/wsui/Common/Table/commanData';
 import BlogPage from '@/wsui/Blog/BlogEditPage';
 import BlogEditPage from '@/wsui/Blog/BlogEditPage';
+import AlertWithAction from '@/wsui/Common/Alert/AlertWithAction';
 
 export default function Page() {
       const { pageId } = useParams();
@@ -24,7 +25,7 @@ export default function Page() {
                   setData(response);
             } catch (error) {
                   console.error("Error fetching data:", error);
-                  setError("Failed to load blog data.");
+                  setError(error.message);
             } finally {
                   setLoading(false);
             }
@@ -67,7 +68,7 @@ export default function Page() {
 
                   <div className="container p-0 mt-5 mb-5 min-h-screen">
                         {loading && <p className="text-gray-500">Loading...</p>}
-                        {error && <p className="text-red-500">{error}</p>}
+                        {error && <AlertWithAction desc={error} type={'danger'} />}
                         {!loading && !error &&
                               <BlogEditPage data={data} />}
                   </div>

@@ -6,6 +6,8 @@ import { NextResponse } from "next/server";
 export async function PATCH(req, { params }) {
       try {
             const { pageId } = params;
+            console.log(pageId);
+
             const { title, content, author } = await req.json();
 
             const updatedBlog = await blogDb.blog.update({
@@ -30,6 +32,7 @@ export async function PATCH(req, { params }) {
 export async function GET(req, { params }) {
       try {
             const { pageId } = params;
+            console.log(pageId);
 
             const blogs = await blogDb.blog.findUnique({
                   where: { id: Number(pageId) }, // Convert pageId to a number if it's an integer ID
