@@ -26,13 +26,6 @@ const generalConfig = {
     },
     { name: "author_id", label: "Author", type: "select", description: "Enter the author's name.", options: author },
     { name: "category_id", label: "Category", type: "select", description: "Select the category.", options: categories },
-    { name: "image", label: "Image", type: "file" },
-    {
-      name: "image_alt",
-      label: "Image Alt",
-      type: "text",
-      validation: { min: 3, max: 100, message: "Alt text must be 3-100 characters." },
-    },
     { name: "publish_date", label: "Publish Date", type: "date" },
     {
       name: "view",
@@ -40,6 +33,13 @@ const generalConfig = {
       type: "number",
       validation: { min: 1, max: 10, message: "View count must be between 1-10 digits." },
     },
+    {
+      name: "image_alt",
+      label: "Image Alt",
+      type: "text",
+      validation: { min: 3, max: 100, message: "Alt text must be 3-100 characters." },
+    },
+    { name: "image", label: "Image", type: "file" },
   ],
 }
 

@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Input, Select, SelectItem, Button } from "@heroui/react"
+import { Input, Select, SelectItem, Button, Image } from "@heroui/react"
 import { z } from "zod"
+import ImageUploader from "./ImageUploader"
 
 export default function FormRenderer({ config, initialData, onDataChange }) {
     const [formData, setFormData] = useState(initialData)
@@ -68,13 +69,7 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
                 )
             case "file":
                 return (
-                    <div key={field.name} className="w-full">
-                        <label className="text-sm">{field.label}</label>
-                        <div className="flex gap-2 items-center">
-                            <Button onPress={() => console.log("Open modal")}>Choose Image</Button>
-                            <span className="text-xs text-gray-500">{formData[field.name] || "No image selected"}</span>
-                        </div>
-                    </div>
+                    <ImageUploader field={field} formData={formData} />
                 )
             default:
                 return (
