@@ -1,94 +1,116 @@
-'use client'
-import React, { useState } from "react";
-import { Form, Input, Button } from "@heroui/react";
-import { Spinner } from "@nextui-org/react";
+"use client"
 
-export default function General() {
-  const [action, setAction] = useState(null);
-  const [loading, setLoading] = useState(false);
+import { useState } from "react"
+import SlugInput from "@/wsui/BasicHelper/SlugInput"
+import FormRenderer from "./FromRender"
+import { ROBOT_LABELS } from "@/lib/helper"
 
-  const handleSubmit = async (formData) => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/submit-form", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+const author = {
+  "1": "John Doe",
+  "2": "Jane Smith"
+};
+const categories = {
+  "Technology": "Technology",
+  "Business": "Business",
+  "Health": "Health"
+};
 
-      if (!response.ok) {
-        throw new Error("Failed to submit form");
-      }
+const generalConfig = {
+  fields: [
+    {
+      name: "title",
+      label: "Title",
+      type: "text",
+      description: "This will show in H1.",
+      validation: { min: 3, max: 100, message: "Title must be 3-100 characters." },
+    },
+    { name: "author_id", label: "Author", type: "select", description: "Enter the author's name.", options: author },
+    { name: "category_id", label: "Category", type: "select", description: "Select the category.", options: categories },
+    { name: "image", label: "Image", type: "file" },
+    {
+      name: "image_alt",
+      label: "Image Alt",
+      type: "text",
+      validation: { min: 3, max: 100, message: "Alt text must be 3-100 characters." },
+    },
+    { name: "publish_date", label: "Publish Date", type: "date" },
+    {
+      name: "view",
+      label: "View Count",
+      type: "number",
+      validation: { min: 1, max: 10, message: "View count must be between 1-10 digits." },
+    },
+  ],
+}
 
-      const result = await response.json();
-      setAction(`Success: ${JSON.stringify(result)}`);
-    } catch (error) {
-      setAction(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+const seoConfig = {
+  fields: [
+    {
+      name: "meta_title",
+      label: "Meta Title",
+      description: "The ideal length for a meta title is 50–60 characters.",
+      type: "text",
+      validation: { min: 10, max: 60, message: "Meta title must be 10-60 characters." },
+    },
+    {
+      name: "meta_description",
+      label: "Meta Description",
+      description: "Enter a short description for SEO.",
+      type: "text",
+      validation: { min: 20, max: 160, message: "Meta description must be 20-160 characters." },
+    },
+    {
+      name: "meta_keywords",
+      label: "Keywords",
+      description: "Add comma-separated keywords.",
+      type: "text",
+      validation: { min: 5, max: 100, message: "Keywords must be 5-100 characters." },
+    },
+    {
+      name: "new_redirect",
+      label: "Redirect URL",
+      description: "Provide a URL for redirection.",
+      type: "text",
+      validation: { min: 5, max: 100, message: "Redirect URL must be 5-100 characters." },
+    },
+    {
+      name: "robots",
+      label: "Robots",
+      description: "SEO robots meta tag.",
+      type: "select",
+      options: ROBOT_LABELS,
+      validation: { min: 3, max: 50, message: "Robots value must be 3-50 characters." },
+    },
+  ],
+}
 
+export default function General({ data }) {
+  const [formData, setFormData] = useState(data)
+
+  const handleDataChange = (newData) => {
+    setFormData((prev) => ({ ...prev, ...newData }))
+  }
+  const handleSlugChange = (newSlug) => {
+    setFormData((prev) => ({ ...prev, slug: newSlug }))
+  }
   return (
-    <div className="">
-      General:- Basic Blog Details Image title meta, schema or FAQ
-      <Form
-        className="w-full max-w-xs flex flex-col gap-4"
-        validationBehavior="native"
-        onReset={() => setAction("reset")}
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const data = Object.fromEntries(new FormData(e.currentTarget));
-          await handleSubmit(data);
-        }}
-      >
-        <Input
-          isRequired
-          errorMessage="Please enter a valid username"
-          label="Username"
-          labelPlacement="outside"
-          name="username"
-          placeholder="Enter your username"
-          type="text"
-        />
+    <div className="w-full text-sm text-muted-foreground p-4">
+      <p className="mb-4 font-semibold">General: Blog Details & SEO Settings</p>
 
-        <Input
-          isRequired
-          errorMessage="Please enter a valid email"
-          label="Email"
-          labelPlacement="outside"
-          name="email"
-          placeholder="Enter your email"
-          type="email"
-        />
-        <div className="flex gap-2">
-          <Button
-            color="primary"
-            type="submit"
-            isDisabled={loading}
-            className="flex items-center justify-center gap-2 px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <Spinner color="warning" size="sm" />
-                <span>Submitting...</span>
-              </>
-            ) : (
-              "Submit"
-            )}
-          </Button>
-          <Button type="reset" variant="flat">
-            Reset
-          </Button>
+      <div className="mb-6">
+        <h3 className="font-semibold mb-2">Blog Details</h3>
+        <div className="grid grid-cols-3 gap-4">
+          <SlugInput title={formData.title} initialSlug={formData.slug} onSlugChange={handleSlugChange} />
+          <FormRenderer config={generalConfig} initialData={formData} onDataChange={handleDataChange} />
         </div>
-        {action && (
-          <div className="text-small text-default-500">
-            Action: <code>{action}</code>
-          </div>
-        )}
-      </Form>
+      </div>
+
+      <div className="mb-6">
+        <h3 className="font-semibold mb-2">SEO Settings</h3>
+        <div className="grid grid-cols-3 gap-4">
+          <FormRenderer config={seoConfig} initialData={formData} onDataChange={handleDataChange} />
+        </div>
+      </div>
     </div>
-  );
+  )
 }
