@@ -10,8 +10,10 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
     const [errors, setErrors] = useState({})
 
     useEffect(() => {
-        onDataChange(formData)
-    }, [formData, onDataChange])
+        if (JSON.stringify(formData) !== JSON.stringify(initialData)) {
+            onDataChange(formData);
+        }
+    }, [formData, onDataChange, initialData]);
 
     const generateZodSchema = () => {
         const schemaFields = config.fields.reduce((acc, field) => {
@@ -69,7 +71,7 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
                 )
             case "file":
                 return (
-                    <ImageUploader field={field} formData={formData} />
+                    <ImageUploader key={field.name} field={field} formData={formData} />
                 )
             default:
                 return (
@@ -90,6 +92,6 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
         }
     }
 
-    return config.fields.map(renderField)
+    return config.fields.map(renderField);
 }
 

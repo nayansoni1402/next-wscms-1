@@ -6,7 +6,7 @@ import { Tabs, Tab, Card, CardBody } from "@heroui/react";
 import Description from './BlogTabs/Description';
 import General from './BlogTabs/General';
 import Comments from './BlogTabs/Comments';
-import {  Copy } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { Button } from '@nextui-org/react';
 import FAQ from './BlogTabs/FAQ';
 

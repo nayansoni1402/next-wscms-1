@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import SlugInput from "@/wsui/BasicHelper/SlugInput"
 import FormRenderer from "./FromRender"
 import { ROBOT_LABELS } from "@/lib/helper"
 
@@ -23,6 +22,18 @@ const generalConfig = {
       type: "text",
       description: "This will show in H1.",
       validation: { min: 3, max: 100, message: "Title must be 3-100 characters." },
+    },
+    {
+      name: "slug",
+      label: "Slug",
+      type: "text",
+      description: "Slug can only contain letters, numbers, and hyphens",
+      validation: {
+        min: 3,
+        max: 100,
+        regex: /^[a-zA-Z0-9-]+$/,
+        message: "Slug must be 3-100 characters and only contain letters, numbers, and hyphens.",
+      },
     },
     { name: "author_id", label: "Author", type: "select", description: "Enter the author's name.", options: author },
     { name: "category_id", label: "Category", type: "select", description: "Select the category.", options: categories },
@@ -90,9 +101,7 @@ export default function General({ data }) {
   const handleDataChange = (newData) => {
     setFormData((prev) => ({ ...prev, ...newData }))
   }
-  const handleSlugChange = (newSlug) => {
-    setFormData((prev) => ({ ...prev, slug: newSlug }))
-  }
+
   return (
     <div className="w-full text-sm text-muted-foreground p-4">
       <p className="mb-4 font-semibold">General: Blog Details & SEO Settings</p>
@@ -100,7 +109,6 @@ export default function General({ data }) {
       <div className="mb-6">
         <h3 className="font-semibold mb-2">Blog Details</h3>
         <div className="grid grid-cols-3 gap-4">
-          <SlugInput title={formData.title} initialSlug={formData.slug} onSlugChange={handleSlugChange} />
           <FormRenderer config={generalConfig} initialData={formData} onDataChange={handleDataChange} />
         </div>
       </div>

@@ -25,7 +25,6 @@ export const fetchData = async (api, method = 'Post', payload, allowCache = true
 
     // const updatedPayload = { ...payload, examname, userCityName, userCountry, userIp, device };
     const isLocal = process.env.NEXT_PUBLIC_APP_MODE != 'local';
-    console.log(isLocal);
     const res = await fetch(process.env.NEXT_PUBLIC_BLOG_API_URL + api, {
         cache: allowCache && !isLocal ? "force-cache" : "no-store",
         method: method,
