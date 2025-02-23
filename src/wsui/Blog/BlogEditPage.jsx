@@ -66,6 +66,7 @@ export default function BlogEditPage({ data }) {
         <div className="flex w-full flex-col">
 
           <Tabs aria-label="Options" isVertical
+
             classNames={{
               tabList: "w-full relative rounded-none p-0 border-b border-divider text-bold bg-white p-4",
               cursor: "w-full bg-ws-primary-500",
@@ -74,9 +75,9 @@ export default function BlogEditPage({ data }) {
             }}
             variant='underlined'>
             {tabs.map(({ key, title, component }) => (
-              <Tab key={key} title={<div className="flex w-full items-center space-x-2">{title}</div>}>
-                <Card className="w-full flex flex-col">
-                  <CardBody className="p-6 !w-full">
+              <Tab className="w-full" key={key} title={<div className="flex w-full items-center space-x-2">{title}</div>}>
+                <Card className="w-full flex flex-col" >
+                  <CardBody className="p-6 w-full">
                     {component}
                   </CardBody>
                 </Card>

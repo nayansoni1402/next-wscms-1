@@ -85,7 +85,7 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
                         type={field.type}
                         isInvalid={!!errors[field.name]}
                         errorMessage={errors[field.name]}
-                        onKeyUp={(e) => handleChange(field.name, e.target.value)}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
                         description={field.description}
                     />
                 )

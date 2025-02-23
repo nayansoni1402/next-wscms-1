@@ -103,22 +103,43 @@ export default function General({ data }) {
   }
 
   return (
-    <div className="w-full text-sm text-muted-foreground p-4">
-      <p className="mb-4 font-semibold">General: Blog Details & SEO Settings</p>
+    <div className="w-full text-sm text-muted-foreground p-4 grid grid-cols-1 md:grid-cols-3 gap-6" >
+      {/* Left Side: Blog Details & SEO Settings (Takes 2/3rd width) */}
+      <div className="md:col-span-2">
+        <p className="mb-4 font-semibold">General: Blog Details & SEO Settings</p>
 
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">Blog Details</h3>
-        <div className="grid grid-cols-3 gap-4">
-          <FormRenderer config={generalConfig} initialData={formData} onDataChange={handleDataChange} />
+        {/* Blog Details */}
+        <div className="mb-6">
+          <h3 className="font-semibold mb-2">Blog Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormRenderer config={generalConfig} initialData={formData} onDataChange={handleDataChange} />
+          </div>
+        </div>
+
+        {/* SEO Settings */}
+        <div className="mb-6">
+          <h3 className="font-semibold mb-2">SEO Settings</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormRenderer config={seoConfig} initialData={formData} onDataChange={handleDataChange} />
+          </div>
         </div>
       </div>
 
-      <div className="mb-6">
-        <h3 className="font-semibold mb-2">SEO Settings</h3>
-        <div className="grid grid-cols-3 gap-4">
-          <FormRenderer config={seoConfig} initialData={formData} onDataChange={handleDataChange} />
+      {/* Right Side: Preview Section (Takes 1/3rd width) */}
+      <div className="border rounded-lg p-4 bg-white shadow-md md:col-span-1">
+        <h3 className="font-semibold mb-2">Preview</h3>
+        <div className="p-2">
+          <h1 className="text-lg font-bold">{"Blog Title"}</h1>
+          <p className="text-xs text-gray-500">By {"Author Name"}</p>
+          <div className="mt-2 w-full h-40 bg-gray-200 flex items-center justify-center rounded-md">
+            <span className="text-gray-500 text-sm">No Image Uploaded</span>
+          </div>
+          {/* Meta Description Preview */}
+          <p className="mt-2 text-gray-600 text-sm">{"Meta description preview..."}</p>
         </div>
       </div>
     </div>
-  )
+  );
+
+
 }
