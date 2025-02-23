@@ -1,21 +1,34 @@
-'use client';
-import { Button, Image } from "@heroui/react";
+"use client"
+
+import { useState } from "react"
+import { Button } from "@heroui/react"
 
 export default function ImageUploader({ field, formData }) {
+    const [image, setImage] = useState(formData[field.name] || null)
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0]
+        if (file) {
+            const reader = new FileReader()
+            reader.onload = (e) => setImage(e.target.result)
+            reader.readAsDataURL(file)
+        }
+    }
 
     return (
-        <div key={field.name} className="w-full">
-            <label className="text-sm">{field.label}</label>
-            <div className="flex gap-2 items-center">
-                <Button onPress={() => console.log("Open modal")}>Choose Image</Button>
-                <span className="text-xs text-gray-500">{formData[field.name] || "No image selected"}</span>
-            </div>
-            <Image
-                alt="HeroUI hero Image with delay"
-                height={200}
-                src={`${formData[field.name]}`}
-                width={300}
+        <div key={field.name} className="space-y-2">
+            <label className="text-sm font-medium">{field.label}</label>
+            <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id={field.name}
             />
+            <label htmlFor={field.name} className="cursor-pointer">
+                <Button variant="bordered">Upload Image</Button>
+            </label>
+            {image && <img src={image} alt="Uploaded" className="mt-2 w-32 h-32 object-cover rounded-lg" />}
         </div>
-    );
+    )
 }
