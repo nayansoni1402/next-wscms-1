@@ -9,7 +9,7 @@ export const generalValidationSchema = z.object({
     author_id: z.string().optional(),
     category_id: z.string().optional(),
     publish_date: z.string().optional(),
-    view: z.number().min(1, "View count must be at least 1.").max(9999999999, "View count cannot exceed 10 digits."),
+    view: z.coerce.number().min(1, "View count must be at least 1.").max(9999999999, "View count cannot exceed 10 digits."),
     image_alt: z.string().min(3, "Alt text must be at least 3 characters.").max(100, "Alt text cannot exceed 100 characters."),
     image: z.any().optional(),
 });
@@ -36,6 +36,7 @@ export const seoValidationSchema = z.object({
     robots: z.string()
         .min(3, "Robots value must be at least 3 characters.")
         .max(50, "Robots value cannot exceed 50 characters."),
+    og_image: z.string(),
 });
 
 

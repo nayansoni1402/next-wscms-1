@@ -52,9 +52,9 @@ export default function General({ data }) {
   }
 
   return (
-    <div className="w-full text-sm text-muted-foreground p-4 grid grid-cols-1 md:grid-cols-3 gap-6" >
+    <div className="w-full text-sm text-muted-foreground p-4 grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
       {/* Left Side: Blog Details & SEO Settings (Takes 2/3rd width) */}
-      <div className="md:col-span-2">
+      <div className="md:col-span-2 h-full overflow-y-auto pr-2">
         <p className="mb-4 font-semibold">General: Blog Details & SEO Settings</p>
 
         {/* Blog Details */}
@@ -75,7 +75,7 @@ export default function General({ data }) {
       </div>
 
       {/* Right Side: Preview Section (Takes 1/3rd width) */}
-      <div className="border rounded-lg p-4 bg-white shadow-md md:col-span-1">
+      <div className="border rounded-lg p-4 bg-white shadow-md md:col-span-1 h-full overflow-y-auto">
         <h3 className="font-semibold mb-2">Preview</h3>
         <div className="p-2">
           <h1 className="text-lg font-bold">{"Blog Title"}</h1>
@@ -88,6 +88,7 @@ export default function General({ data }) {
         </div>
       </div>
     </div>
+
   );
 
 
