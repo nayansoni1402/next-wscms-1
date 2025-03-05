@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from "react";
-import { Form } from "@heroui/react";
+import { Alert, Form } from "@heroui/react";
 import { Spinner } from "@nextui-org/react";
 import { Tabs, Tab, Card, CardBody } from "@heroui/react";
 import Description from './BlogTabs/Description';
@@ -9,25 +9,29 @@ import Comments from './BlogTabs/Comments';
 import { Copy } from 'lucide-react';
 import { Button } from '@nextui-org/react';
 import FAQ from './BlogTabs/FAQ';
+import { generalValidationSchema, seoValidationSchema } from "../allSchema/blogEditSchema";
+import { fetchData } from "@/lib/apiCall";
+import { useParams } from "next/navigation";
+import { z } from "zod";
 
 export default function BlogEditPage({ data }) {
-
+  const { pageId } = useParams();
   const [action, setAction] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleSubmit = async (formData) => {
     setLoading(true);
+    setErrors({});
     try {
-      // const parsedData = GeneralSchema.parse(formData); 
-      setAction(formData);
-      return true;
-      const response = await fetch("/api/submit-form", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      // Validate form data
+      const parsedGeneralData = generalValidationSchema.parse(formData);
+      const parsedSeoData = seoValidationSchema.parse(formData);
+
+      // Merge validated data
+      const parsedData = { ...parsedGeneralData, ...parsedSeoData };
+      // Make API request
+      const response = await fetchData(`/edit-submit-form/${pageId}`, 'POST', parsedData, false);
 
       if (!response.ok) {
         throw new Error("Failed to submit form");
@@ -36,7 +40,16 @@ export default function BlogEditPage({ data }) {
       const result = await response.json();
       setAction(`Success: ${JSON.stringify(result)}`);
     } catch (error) {
-      setAction(`Error: ${error.message}`);
+      if (error instanceof z.ZodError) {
+        const formattedErrors = error.errors.reduce((acc, err) => {
+          acc[err.path[0]] = err.message;
+          return acc;
+        }, {});
+        setErrors(formattedErrors);
+        setAction("Validation failed. Please check errors.");
+      } else {
+        setAction(`Error: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -50,45 +63,61 @@ export default function BlogEditPage({ data }) {
   ];
 
   return (
-    <div className="flex  w-full flex-col px-4">
+    <div className="flex w-full flex-col px-4">
+
+      {/* Display validation errors */}
+      {Object.keys(errors).length > 0 && (
+        <div className="flex items-center justify-center w-full">
+          <div className="flex flex-col w-full">
+            <div className="w-full flex items-center my-3">
+              <Alert color="danger" title={<ul className="list-disc ml-4">
+                {Object.entries(errors).map(([field, message]) => (
+                  <li key={field}><strong>{field}:</strong> {message}</li>
+                ))}
+              </ul>} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Form Submission */}
       <Form
         className="flex w-full flex-col w-min-48"
         validationBehavior="native"
-        // onReset={() => setAction("reset")}
         onSubmit={async (e) => {
           e.preventDefault();
-          const data = Object.fromEntries(new FormData(e.currentTarget));
-          await handleSubmit(data);
+          const formData = Object.fromEntries(new FormData(e.currentTarget));
+          await handleSubmit(formData);
         }}
       >
-
         {/* Tabs Section */}
         <div className="flex w-full flex-col">
-
-          <Tabs aria-label="Options" isVertical
-
+          <Tabs
+            aria-label="Options"
+            isVertical
             classNames={{
               tabList: "w-full relative rounded-none p-0 border-b border-divider text-bold bg-white p-4",
               cursor: "w-full bg-ws-primary-500",
               tab: "max-w-fit px-0 h-12",
               tabContent: "group-data-[selected=true]:text-ws-primary-500",
             }}
-            variant='underlined'>
+            variant="underlined"
+          >
             {tabs.map(({ key, title, component }) => (
               <Tab className="w-full" key={key} title={<div className="flex w-full items-center space-x-2">{title}</div>}>
-                <Card className="w-full flex flex-col" >
-                  <CardBody className="p-6 w-full">
-                    {component}
-                  </CardBody>
+                <Card className="w-full flex flex-col">
+                  <CardBody className="p-6 w-full">{component}</CardBody>
                 </Card>
               </Tab>
             ))}
           </Tabs>
         </div>
+
         <Button variant="flat" startContent={<Copy size={20} />}>
           Copy Page
         </Button>
 
+        {/* Submit & Cancel Buttons */}
         <div className="flex items-center gap-4 py-4">
           <Button
             color="primary"
@@ -105,16 +134,16 @@ export default function BlogEditPage({ data }) {
               "Submit"
             )}
           </Button>
-          <Button variant="flat">
-            Cancel
-          </Button>
+          <Button variant="flat">Cancel</Button>
         </div>
+
+        {/* Action Message */}
         {action && (
           <div className="text-small text-default-500">
-            Action: <pre>{JSON.stringify(action, true, 2)}</pre>
+            Action: <pre>{JSON.stringify(action, null, 2)}</pre>
           </div>
         )}
       </Form>
-    </div >
+    </div>
   );
 }

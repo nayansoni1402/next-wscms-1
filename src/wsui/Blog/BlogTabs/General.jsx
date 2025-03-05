@@ -3,6 +3,7 @@
 import { useState } from "react"
 import FormRenderer from "./FromRender"
 import { ROBOT_LABELS } from "@/lib/helper"
+import { generalValidationSchema, seoValidationSchema } from "@/wsui/allSchema/blogEditSchema";
 
 const author = {
   "1": "John Doe",
@@ -14,86 +15,34 @@ const categories = {
   "Health": "Health"
 };
 
-const generalConfig = {
-  fields: [
-    {
-      name: "title",
-      label: "Title",
-      type: "text",
-      description: "This will show in H1.",
-      validation: { min: 3, max: 100, message: "Title must be 3-100 characters." },
-    },
-    {
-      name: "slug",
-      label: "Slug",
-      type: "text",
-      description: "Slug can only contain letters, numbers, and hyphens",
-      validation: {
-        min: 3,
-        max: 100,
-        regex: /^[a-zA-Z0-9-]+$/,
-        message: "Slug must be 3-100 characters and only contain letters, numbers, and hyphens.",
-      },
-    },
-    { name: "author_id", label: "Author", type: "select", description: "Enter the author's name.", options: author },
-    { name: "category_id", label: "Category", type: "select", description: "Select the category.", options: categories },
-    { name: "publish_date", label: "Publish Date", type: "date" },
-    {
-      name: "view",
-      label: "View Count",
-      type: "number",
-      validation: { min: 1, max: 10, message: "View count must be between 1-10 digits." },
-    },
-    {
-      name: "image_alt",
-      label: "Image Alt",
-      type: "text",
-      validation: { min: 3, max: 100, message: "Alt text must be 3-100 characters." },
-    },
-    { name: "image", label: "Image", type: "file" },
-  ],
-}
+const generalConfig = [
+  { name: "title", label: "Title", type: "text", description: "This will show in H1." },
+  { name: "slug", label: "Slug", type: "text", description: "Slug can only contain letters, numbers, and hyphens." },
+  { name: "author_id", label: "Author", type: "select", description: "Enter the author's name.", options: author },
+  { name: "category_id", label: "Category", type: "select", description: "Select the category.", options: categories },
+  { name: "publish_date", label: "Publish Date", type: "date" },
+  { name: "view", label: "View Count", type: "number" },
+  { name: "excerpt", label: "Excerpt", type: "textarea", description: "Short summary of the blog post." },
+  { name: "content", label: "Content", type: "textarea", description: "Main content of the blog post." },
+  { name: "tags", label: "Tags", type: "text", description: "Add comma-separated tags." },
+  { name: "image_alt", label: "Image Alt", type: "text" },
+  { name: "image", label: "Image", type: "file" },
+  { name: "status", label: "Status", type: "select", options: { "draft": "Draft", "published": "Published" } },
+];
 
-const seoConfig = {
-  fields: [
-    {
-      name: "meta_title",
-      label: "Meta Title",
-      description: "The ideal length for a meta title is 50–60 characters.",
-      type: "text",
-      validation: { min: 10, max: 60, message: "Meta title must be 10-60 characters." },
-    },
-    {
-      name: "meta_description",
-      label: "Meta Description",
-      description: "Enter a short description for SEO.",
-      type: "text",
-      validation: { min: 20, max: 160, message: "Meta description must be 20-160 characters." },
-    },
-    {
-      name: "meta_keywords",
-      label: "Keywords",
-      description: "Add comma-separated keywords.",
-      type: "text",
-      validation: { min: 5, max: 100, message: "Keywords must be 5-100 characters." },
-    },
-    {
-      name: "new_redirect",
-      label: "Redirect URL",
-      description: "Provide a URL for redirection.",
-      type: "text",
-      validation: { min: 5, max: 100, message: "Redirect URL must be 5-100 characters." },
-    },
-    {
-      name: "robots",
-      label: "Robots",
-      description: "SEO robots meta tag.",
-      type: "select",
-      options: ROBOT_LABELS,
-      validation: { min: 3, max: 50, message: "Robots value must be 3-50 characters." },
-    },
-  ],
-}
+const seoConfig = [
+  { name: "meta_title", label: "Meta Title", description: "The ideal length for a meta title is 50–60 characters.", type: "text" },
+  { name: "meta_description", label: "Meta Description", description: "Enter a short description for SEO.", type: "textarea" },
+  { name: "meta_keywords", label: "Keywords", description: "Add comma-separated keywords.", type: "text" },
+  { name: "canonical_url", label: "Canonical URL", description: "Specify the preferred URL for SEO.", type: "text" },
+  { name: "new_redirect", label: "Redirect URL", description: "Provide a URL for redirection.", type: "text" },
+  { name: "robots", label: "Robots", description: "SEO robots meta tag.", type: "select", options: ROBOT_LABELS },
+  { name: "og_title", label: "Open Graph Title", description: "Title for social media sharing.", type: "text" },
+  { name: "og_description", label: "Open Graph Description", description: "Description for social media sharing.", type: "textarea" },
+  { name: "og_image", label: "Open Graph Image", type: "file" },
+];
+
+
 
 export default function General({ data }) {
   const [formData, setFormData] = useState(data)
@@ -112,7 +61,7 @@ export default function General({ data }) {
         <div className="mb-6">
           <h3 className="font-semibold mb-2">Blog Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormRenderer config={generalConfig} initialData={formData} onDataChange={handleDataChange} />
+            <FormRenderer config={generalConfig} initialData={formData} onDataChange={handleDataChange} zodSchema={generalValidationSchema} />
           </div>
         </div>
 
@@ -120,7 +69,7 @@ export default function General({ data }) {
         <div className="mb-6">
           <h3 className="font-semibold mb-2">SEO Settings</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormRenderer config={seoConfig} initialData={formData} onDataChange={handleDataChange} />
+            <FormRenderer config={seoConfig} initialData={formData} onDataChange={handleDataChange} zodSchema={seoValidationSchema} />
           </div>
         </div>
       </div>

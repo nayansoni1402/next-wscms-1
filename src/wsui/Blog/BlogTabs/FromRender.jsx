@@ -5,8 +5,8 @@ import { Input, Select, SelectItem, Button, Image } from "@heroui/react"
 import { z } from "zod"
 import ImageUploader from "./ImageUploader"
 
-export default function FormRenderer({ config, initialData, onDataChange }) {
-    const [formData, setFormData] = useState(initialData)
+export default function FormRenderer({ config, initialData, onDataChange, zodSchema }) {
+    const [formData, setFormData] = useState(initialData || {})
     const [errors, setErrors] = useState({})
 
     useEffect(() => {
@@ -15,40 +15,22 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
         }
     }, [formData, onDataChange, initialData]);
 
-    const generateZodSchema = () => {
-        const schemaFields = config.fields.reduce((acc, field) => {
-            if (field.validation) {
-                if (field.type === "number") {
-                    acc[field.name] = z.number().min(field.validation.min).max(field.validation.max);
-                } else if (field.type === "date") {
-                    acc[field.name] = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)");
-                } else {
-                    acc[field.name] = z.string().min(field.validation.min, field.validation.message).max(field.validation.max, field.validation.message);
-                }
-            }
-            return acc;
-        }, {});
-
-        return z.object(schemaFields)
-    }
-
-    const schema = generateZodSchema()
-
     const handleValidation = (name, value) => {
         try {
-            schema.shape[name]?.parse(value)
-            setErrors((prev) => ({ ...prev, [name]: "" }))
+            zodSchema.shape[name]?.parse(value);
+            setErrors((prev) => ({ ...prev, [name]: "" }));
         } catch (error) {
             if (error instanceof z.ZodError) {
-                setErrors((prev) => ({ ...prev, [name]: error.errors[0].message }))
+                setErrors((prev) => ({ ...prev, [name]: error.errors[0]?.message || "Invalid input" }));
             }
         }
     }
 
     const handleChange = (name, value) => {
-        setFormData((prev) => ({ ...prev, [name]: value }))
-        handleValidation(name, value)
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        handleValidation(name, value);
     }
+
 
     const renderField = (field) => {
         switch (field.type) {
@@ -62,17 +44,15 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
                         selectedKeys={[formData[field.name]]}
                         onSelectionChange={(keys) => handleChange(field.name, Array.from(keys)[0])}
                     >
-                        {Object.entries(field.options || {}).map(([key, value]) => (
+                        {Object.keys(field.options || {}).map((key) => (
                             <SelectItem key={key} value={key}>
-                                {value}
+                                {field.options[key]}
                             </SelectItem>
                         ))}
                     </Select>
-                )
+                );
             case "file":
-                return (
-                    <ImageUploader key={field.name} field={field} formData={formData} />
-                )
+                return <ImageUploader key={field.name} field={field} formData={formData} />;
             default:
                 return (
                     <Input
@@ -88,10 +68,10 @@ export default function FormRenderer({ config, initialData, onDataChange }) {
                         onChange={(e) => handleChange(field.name, e.target.value)}
                         description={field.description}
                     />
-                )
+                );
         }
     }
 
-    return config.fields.map(renderField);
+    return config.map(renderField);
 }
 
