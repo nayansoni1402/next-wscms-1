@@ -1,5 +1,6 @@
 "use server";
 
+import { unstable_cache } from "next/cache";
 import { ROBOT_LABELS } from "./helper";
 import { blogDb } from "./prismaClients";
 
@@ -29,10 +30,10 @@ export async function fetchOptions(fields) {
     for (const field of fields) {
         switch (field) {
             case "author_id":
-                options["author_id"] = await getAuthors();
+                options["author_id"] = await getAuthor();
                 break;
             case "category_id":
-                options["category_id"] = await getCategory();
+                options["category_id"] = await getCategories();
                 break;
             case "user_id":
                 options["user_id"] = await getOptions("user");
@@ -53,6 +54,7 @@ export async function getAuthors() {
 
         const authors = await blogDb.author.findMany({
             select: { id: true, name: true },
+            orderBy: { name: "asc" },
         });
 
         const formattedData = authors.map(item => ({
@@ -71,10 +73,13 @@ export async function getAuthors() {
 
 export async function getCategory() {
     try {
+        console.log("options------");
         await blogDb.$connect(); // Ensure Prisma connection is open
 
         const category = await blogDb.category.findMany({
             select: { id: true, title: true },
+            orderBy: { title: "asc" },
+            where: { status: 1 },
         });
         return category;
     } catch (error) {
@@ -84,3 +89,22 @@ export async function getCategory() {
         await blogDb.$disconnect(); // Always close the connection
     }
 }
+
+export const getCategories = unstable_cache(
+    async () => {
+        console.log("options------");
+        return await getCategory();
+    },
+    ["categories"],
+    { revalidate: 86400 } // Cache for 24 hours
+);
+
+
+export const getAuthor = unstable_cache(
+    async () => {
+        console.log("getAuthor------");
+        return await getAuthors();
+    },
+    ["categories"],
+    { revalidate: 86400 } // Cache for 24 hours
+);
