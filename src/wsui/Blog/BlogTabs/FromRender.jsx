@@ -6,17 +6,35 @@ import { z } from "zod"
 import ImageUploader from "./ImageUploader"
 import { DatePicker } from "@nextui-org/date-picker"
 import { parseAbsoluteToLocal } from "@internationalized/date";
+import { fetchOptions } from "@/lib/getAuthors"
 
 
 export default function FormRenderer({ config, initialData, onDataChange, zodSchema }) {
-    const [formData, setFormData] = useState(initialData || {})
-    const [errors, setErrors] = useState({})
-
+    const [formData, setFormData] = useState(initialData || {});
+    const [errors, setErrors] = useState({});
+    const [dynamicOptions, setDynamicOptions] = useState({});
     useEffect(() => {
         if (JSON.stringify(formData) !== JSON.stringify(initialData)) {
             onDataChange(formData);
         }
-    }, [formData, onDataChange, initialData]);
+    }, [onDataChange, initialData]);
+
+    useEffect(() => {
+        async function loadOptions() {
+            try {
+                const requiredFields = config
+                    .filter((field) => field.type === "select")
+                    .map((field) => field.name);
+                const optionsData = await fetchOptions(requiredFields);
+                console.log("optionsData--------------------------------");
+                console.log(optionsData);
+                setDynamicOptions(optionsData || {});
+            } catch (error) {
+                console.error("Error fetching dynamic options:", error);
+            }
+        }
+        loadOptions();
+    }, [config]);
 
     const handleValidation = (name, value) => {
         try {
@@ -45,17 +63,18 @@ export default function FormRenderer({ config, initialData, onDataChange, zodSch
                         className="w-full"
                         name={field.name}
                         label={field.label}
-                        selectedKeys={formData[field.name] ? [formData[field.name]] : []}
+                        selectedKeys={formData[field.name] ? new Set([String(formData[field.name])]) : new Set()}
                         onSelectionChange={(keys) => {
-                            const selectedValue = Array.from(keys)[0] || "";
+                            const selectedValue = keys.values().next().value || "";
                             handleChange(field.name, selectedValue);
                         }}
                     >
-                        {Object.keys(field.options || {}).map((key) => (
-                            <SelectItem key={key} value={key}>
-                                {field.options[key]}
-                            </SelectItem>
-                        ))}
+                        {Array.isArray(dynamicOptions[field.name]) &&
+                            dynamicOptions[field.name].map((option) => (
+                                <SelectItem key={String(option.id)} value={String(option.id)}>
+                                    {option.title}
+                                </SelectItem>
+                            ))}
                     </Select>
 
                 );

@@ -1,6 +1,6 @@
 import { z } from "zod"
 const slugSchema = z.union([
-    z.string().min(3, "Slug must be at least 3 characters.") // Valid slug
+    z.string().min(3, "Slug must be at least 3 characters.") 
         .max(100, "Slug cannot exceed 100 characters.")
         .regex(/^[a-zA-Z0-9-]+$/, "Slug must only contain letters, numbers, and hyphens."),
     z.literal("")

@@ -10,9 +10,9 @@ export const generateSlug = (title) => {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 };
 
-export const ROBOT_LABELS = {
-    "Index, Follow": "Index, Follow",
-    "Noindex, Nofollow": "Noindex, Nofollow",
-    "Index, Nofollow": "Index, Nofollow",
-    "Noindex, Follow": "Noindex, Follow",
-};
+export const ROBOT_LABELS = [
+    { id: 'Index, Follow', title: 'Index, Follow' },
+    { id: 'Noindex, Nofollow', title: 'Noindex, Nofollow' },
+    { id: 'Index, Nofollow', title: 'Index, Nofollow' },
+    { id: 'Noindex, Follow', title: 'Noindex, Follow' },
+];

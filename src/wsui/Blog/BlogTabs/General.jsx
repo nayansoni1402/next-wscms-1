@@ -2,7 +2,6 @@
 // description,description_old,short_content,status,faq,comments , image url
 import { useState } from "react"
 import FormRenderer from "./FromRender"
-import { ROBOT_LABELS } from "@/lib/helper"
 import { generalValidationSchema, seoValidationSchema } from "@/wsui/allSchema/blogEditSchema";
 import { Divider } from "@nextui-org/react";
 
@@ -21,8 +20,8 @@ const generalConfig = [
   { name: "slug", label: "Slug", type: "text", description: "Slug can only contain letters, numbers, and hyphens." },
   { name: "publish_date", label: "Publish Date", type: "date" },
   { name: "view", label: "View Count", type: "number" },
-  { name: "author_id", label: "Author", type: "select", description: "Enter the author's name.", options: author },
-  { name: "category_id", label: "Category", type: "select", description: "Select the category.", options: categories },
+  { name: "author_id", label: "Author", type: "select", description: "Enter the author's name." },
+  { name: "category_id", label: "Category", type: "select", description: "Select the category." },
   { name: "image_alt", label: "Image Alt", type: "text" },
   { name: "image", label: "Image", type: "file" },
 ];
@@ -32,7 +31,7 @@ const seoConfig = [
   { name: "meta_description", label: "Meta Description", description: "Enter a short description for SEO.", type: "textarea" },
   { name: "meta_keywords", label: "Keywords", description: "Add comma-separated keywords.", type: "text" },
   { name: "new_redirect", label: "Redirect URL", description: "Provide a URL for redirection.", type: "text" },
-  { name: "robots", label: "Robots", description: "SEO robots meta tag.", type: "select", options: ROBOT_LABELS },
+  { name: "robots", label: "Robots", description: "SEO robots meta tag.", type: "select" },
 ];
 
 
