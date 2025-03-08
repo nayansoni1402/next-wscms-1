@@ -31,14 +31,17 @@ export default function BlogEditPage({ data }) {
       // Merge validated data
       const parsedData = { ...parsedGeneralData, ...parsedSeoData };
       // Make API request
-      const response = await fetchData(`/edit-submit-form/${pageId}`, 'POST', parsedData, false);
-
-      if (!response.ok) {
-        throw new Error("Failed to submit form");
+      const response = await fetchData(`/blog-list/${pageId}`, 'PATCH', parsedData, false);
+      if (!response) {
+        throw new Error("No response from the server");
       }
+      console.log("response--");
+      console.log(response);
 
-      const result = await response.json();
-      setAction(`Success: ${JSON.stringify(result)}`);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      setAction(`Success: ${(response)}`);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const formattedErrors = error.errors.reduce((acc, err) => {
@@ -48,7 +51,8 @@ export default function BlogEditPage({ data }) {
         setErrors(formattedErrors);
         setAction(formData);
       } else {
-        setAction(`Error: ${error.message}`);
+        setErrors({ "error": error.message });
+        setAction(`Error: ${JSON.stringify(error.message, null, 2)}`);
       }
     } finally {
       setLoading(false);
@@ -64,7 +68,12 @@ export default function BlogEditPage({ data }) {
 
   return (
     <div className="flex w-full flex-col px-4">
-
+      {/* Action Message */}
+      {action && (
+        <div className="text-small text-default-500">
+          Action: <pre>{JSON.stringify(action, null, 2)}</pre>
+        </div>
+      )}
       {/* Display validation errors */}
       {Object.keys(errors).length > 0 && (
         <div className="flex items-center justify-center w-full">
@@ -136,13 +145,6 @@ export default function BlogEditPage({ data }) {
           </Button>
           <Button variant="flat">Cancel</Button>
         </div>
-
-        {/* Action Message */}
-        {action && (
-          <div className="text-small text-default-500">
-            Action: <pre>{JSON.stringify(action, null, 2)}</pre>
-          </div>
-        )}
       </Form>
     </div>
   );

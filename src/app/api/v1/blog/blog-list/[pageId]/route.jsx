@@ -1,18 +1,34 @@
-import { buildDynamicFilter, buildDynamicFilterAvd } from "@/lib/helper/buildDynamicFilter";
 import { blogDb, CmsDb } from "@/lib/prismaClients";
-import { formatDateMoment } from "@/lib/utils";
+import { generalValidationSchema, seoValidationSchema } from "@/wsui/allSchema/blogEditSchema";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req, { params }) {
       try {
             const { pageId } = params;
-            console.log(pageId);
 
-            const { title, content, author } = await req.json();
+            const formData = await req.json();
+            const parsedGeneralData = generalValidationSchema.parse(formData);
+            const parsedSeoData = seoValidationSchema.parse(formData);
+            const parsedData = { ...parsedGeneralData, ...parsedSeoData };
+            const formattedData = {
+                  ...parsedData,
+                  author_id: parsedData.author_id ? Number(parsedData.author_id) : undefined,
+                  category_id: parsedData.category_id ? Number(parsedData.category_id) : undefined,
+                  view: parsedData.view ? Number(parsedData.view) : undefined,
+                  status: parsedData.status ? Number(parsedData.status) : undefined,
+                  publish_date: parsedData.publish_date && !isNaN(Date.parse(parsedData.publish_date))
+                        ? new Date(parsedData.publish_date)
+                        : undefined,
+            };
+
+
+            const updateData = Object.fromEntries(
+                  Object.entries(formattedData).filter(([_, value]) => value !== "" && value !== null && value !== undefined)
+            );
 
             const updatedBlog = await blogDb.blog.update({
-                  where: { id: Number(pageId) }, // Ensure correct format
-                  data: { title, content, author },
+                  where: { id: Number(pageId) },
+                  data: updateData,
             });
 
             if (!updatedBlog) {
