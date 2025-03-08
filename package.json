@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@builder.io/partytown": "^0.10.2",
+    "@editorjs/editorjs": "^2.30.8",
+    "@editorjs/header": "^2.8.8",
+    "@editorjs/list": "^2.0.6",
+    "@editorjs/paragraph": "^2.11.7",
     "@heroui/avatar": "^2.2.7",
     "@heroui/react": "^2.6.14",
     "@heroui/use-infinite-scroll": "^2.2.3",
