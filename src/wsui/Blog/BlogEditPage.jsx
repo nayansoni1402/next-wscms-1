@@ -66,6 +66,7 @@ export default function BlogEditPage({ data }) {
     { key: "comment", title: "Comments", component: <Comments data={data} /> },
   ];
 
+
   return (
     <div className="flex w-full flex-col px-4">
       {/* Action Message */}

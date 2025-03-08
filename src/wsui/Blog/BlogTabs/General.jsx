@@ -1,19 +1,9 @@
 "use client"
-// description,description_old,short_content,status,faq,comments , image url
+// description,description_old,status,faq,comments , image url
 import { useState } from "react"
 import FormRenderer from "./FromRender"
 import { generalValidationSchema, seoValidationSchema } from "@/wsui/allSchema/blogEditSchema";
 import { Divider } from "@nextui-org/react";
-
-const author = {
-  "1": "John Doe",
-  "2": "Jane Smith"
-};
-const categories = {
-  "Technology": "Technology",
-  "Business": "Business",
-  "Health": "Health"
-};
 
 const generalConfig = [
   { name: "title", label: "Title", type: "text", description: "This will show in H1." },
@@ -24,6 +14,7 @@ const generalConfig = [
   { name: "category_id", label: "Category", type: "select", description: "Select the category." },
   { name: "image_alt", label: "Image Alt", type: "text" },
   { name: "image", label: "Image", type: "file" },
+  { name: "short_content", label: "Short Content", type: "textarea" },
 ];
 
 const seoConfig = [

@@ -1,6 +1,6 @@
 import { z } from "zod"
 const slugSchema = z.union([
-    z.string().min(3, "Slug must be at least 3 characters.") 
+    z.string().min(3, "Slug must be at least 3 characters.")
         .max(100, "Slug cannot exceed 100 characters.")
         .regex(/^[a-zA-Z0-9-]+$/, "Slug must only contain letters, numbers, and hyphens."),
     z.literal("")
@@ -14,6 +14,7 @@ export const generalValidationSchema = z.object({
     view: z.coerce.number().min(1, "View count must be at least 1.").max(9999999999, "View count cannot exceed 10 digits."),
     image_alt: z.string().min(3, "Alt text must be at least 3 characters.").max(100, "Alt text cannot exceed 100 characters."),
     image: z.any().optional(),
+    short_content: z.string().min(40, "Short content must be at least 40 characters.").max(200, "Short content cannot exceed 200 characters."),
 });
 
 
