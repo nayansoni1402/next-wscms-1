@@ -24,6 +24,8 @@ export async function GET(request) {
                   image_alt: "Image alt",
                   view: "View",
                   author_name: "Author name",
+                  created_at: "Created At",
+
             };
 
             const totalCount = await blogDb.blog.count();

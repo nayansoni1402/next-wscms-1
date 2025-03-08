@@ -92,6 +92,7 @@ export async function POST(request) {
 
 
             const nextPageLink = nextPage == null ? null : `${process.env.NEXT_PUBLIC_BLOG_API_URL}/blog-list?page=${nextPage}`;
+
             return NextResponse.json({
                   results: items,
                   next: nextPage == null ? null : nextPage,

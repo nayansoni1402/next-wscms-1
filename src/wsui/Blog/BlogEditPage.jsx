@@ -46,7 +46,7 @@ export default function BlogEditPage({ data }) {
           return acc;
         }, {});
         setErrors(formattedErrors);
-        setAction("Validation failed. Please check errors.");
+        setAction(formData);
       } else {
         setAction(`Error: ${error.message}`);
       }

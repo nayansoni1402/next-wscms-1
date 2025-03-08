@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { Input, Select, SelectItem, Button, Image } from "@heroui/react"
 import { z } from "zod"
 import ImageUploader from "./ImageUploader"
+import { DatePicker } from "@nextui-org/date-picker"
+import { parseAbsoluteToLocal } from "@internationalized/date";
+
 
 export default function FormRenderer({ config, initialData, onDataChange, zodSchema }) {
     const [formData, setFormData] = useState(initialData || {})
@@ -27,6 +30,7 @@ export default function FormRenderer({ config, initialData, onDataChange, zodSch
     }
 
     const handleChange = (name, value) => {
+        console.log(name, value);
         setFormData((prev) => ({ ...prev, [name]: value }));
         handleValidation(name, value);
     }
@@ -41,8 +45,11 @@ export default function FormRenderer({ config, initialData, onDataChange, zodSch
                         className="w-full"
                         name={field.name}
                         label={field.label}
-                        selectedKeys={[formData[field.name]]}
-                        onSelectionChange={(keys) => handleChange(field.name, Array.from(keys)[0])}
+                        selectedKeys={formData[field.name] ? [formData[field.name]] : []}
+                        onSelectionChange={(keys) => {
+                            const selectedValue = Array.from(keys)[0] || "";
+                            handleChange(field.name, selectedValue);
+                        }}
                     >
                         {Object.keys(field.options || {}).map((key) => (
                             <SelectItem key={key} value={key}>
@@ -50,7 +57,32 @@ export default function FormRenderer({ config, initialData, onDataChange, zodSch
                             </SelectItem>
                         ))}
                     </Select>
+
                 );
+            case "date":
+                return (<div className="w-full max-w-xl flex flex-row gap-4">
+                    <DatePicker
+                        hideTimeZone
+                        showMonthAndYearPickers
+                        defaultValue={
+                            formData[field.name]
+                                ?
+                                parseAbsoluteToLocal(formData[field.name])
+                                : undefined
+                        }
+                        value={
+                            formData[field.name]
+                                ?
+                                parseAbsoluteToLocal(formData[field.name])
+                                : undefined
+                        }
+                        label={field.label}
+                        name={field.name}
+                        variant="bordered"
+                        isInvalid={!!errors[field.name]}
+                        errorMessage={errors[field.name]}
+                    />
+                </div>);
             case "file":
                 return <ImageUploader key={field.name} field={field} formData={formData} />;
             default:
