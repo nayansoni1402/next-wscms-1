@@ -84,7 +84,12 @@ export default function FormRenderer({ config, initialData, onDataChange, zodSch
                     />
                 </div>);
             case "file":
-                return <ImageUploader key={field.name} field={field} formData={formData} />;
+                return <ImageUploader
+                    key={field.name}
+                    field={field}
+                    formData={formData}
+                    onImageUpload={handleChange}
+                />;
             default:
                 return (
                     <Input

@@ -14,6 +14,7 @@ const nextConfig = {
             { protocol: "https", hostname: "www.gradding.com" },
             { protocol: "https", hostname: "gradding.com" },
             { protocol: "https", hostname: "gradding.s3.ap-south-1.amazonaws.com" },
+            { protocol: "https", hostname: "wsnew2024.s3.amazonaws.com" },
             { protocol: "http", hostname: "localhost" },
             { protocol: "https", hostname: "beta.gradding.com" },
             { protocol: "http", hostname: "127.0.0.1" },
