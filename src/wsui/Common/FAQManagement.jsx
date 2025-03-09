@@ -104,7 +104,7 @@ export default function FAQManagement({ data }) {
                         ) : (
                             <div className="space-y-4">
                                 {faqs.map((faq) => (
-                                    <Card key={faq.id} className="shadow-sm">
+                                    <Card key={faq.id} className="shadow-sm transition-transform transform hover:scale-[1.02] hover:shadow-md">
                                         <CardBody className="p-4">
                                             <div className="flex justify-between items-start">
                                                 <div className="flex-1">
