@@ -25,8 +25,8 @@ import { faqSchema } from "../allSchema/blogEditSchema"
 import FormRenderer from "../Blog/BlogTabs/FromRender"
 
 export default function FAQManagement({ data }) {
-    const [formData, setFormData] = useState(data);
-    const [faqs, setFaqs] = useState(data.faq);
+
+    const [faqs, setFaqs] = useState(JSON.parse(data.faq));
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [currentFaq, setCurrentFaq] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -104,36 +104,12 @@ export default function FAQManagement({ data }) {
                         ) : (
                             <div className="space-y-4">
                                 {faqs.map((faq) => (
-                                    <Card key={faq.id} className="shadow-sm transition-transform transform hover:scale-[1.02] hover:shadow-md">
-                                        <CardBody className="p-4">
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1">
-                                                    <h3 className="font-medium text-lg mb-2">{faq.question}</h3>
-                                                    <p className="text-gray-600">{faq.answer}</p>
-                                                </div>
-                                                <Dropdown>
-                                                    <DropdownTrigger>
-                                                        <Button isIconOnly variant="light" size="sm">
-                                                            <MoreVertical size={16} />
-                                                        </Button>
-                                                    </DropdownTrigger>
-                                                    <DropdownMenu aria-label="FAQ Actions">
-                                                        <DropdownItem startContent={<Pencil size={16} />} onPress={() => handleEdit(faq)}>
-                                                            Edit
-                                                        </DropdownItem>
-                                                        <DropdownItem
-                                                            startContent={<Trash2 size={16} />}
-                                                            className="text-danger"
-                                                            color="danger"
-                                                            onPress={() => handleDelete(faq.id)}
-                                                        >
-                                                            Delete
-                                                        </DropdownItem>
-                                                    </DropdownMenu>
-                                                </Dropdown>
-                                            </div>
-                                        </CardBody>
-                                    </Card>
+                                    <FAQItem
+                                        key={faq.id}
+                                        faq={faq}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                    />
                                 ))}
                             </div>
                         )}
@@ -141,44 +117,97 @@ export default function FAQManagement({ data }) {
                 </Card>
             </div>
 
-            <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-                <ModalContent>
-                    <ModalHeader>{isEditing ? "Edit FAQ" : "Add New FAQ"}</ModalHeader>
-                    <ModalBody>
-                        <Input
-                            key="question"
-                            className="w-full"
-                            variant="bordered"
-                            name="question"
-                            value={currentFaq?.question || ""}
-                            label="Question"
-                            type="text"
-                            isInvalid={!!errors.question}
-                            errorMessage={errors.question}
-                            onChange={(e) => handleChange("question", e.target.value)}
-                        />
-                        <Textarea
-                            key="answer"
-                            className="w-full"
-                            variant="bordered"
-                            name="answer"
-                            value={currentFaq?.answer || ""}
-                            label="Answer"
-                            isInvalid={!!errors.answer}
-                            errorMessage={errors.answer}
-                            onChange={(e) => handleChange("answer", e.target.value)}
-                        />
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button variant="flat" color="danger" onPress={onClose}>
-                            Cancel
-                        </Button>
-                        <Button color="primary" onPress={handleSave}>
-                            {isEditing ? "Update" : "Save"}
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+            <FAQModal
+                isOpen={isOpen}
+                onClose={onClose}
+                currentFaq={currentFaq}
+                isEditing={isEditing}
+                errors={errors}
+                onChange={handleChange}
+                onSave={handleSave}
+            />
         </div>
+    );
+}
+
+
+const FAQModal = ({ isOpen, onClose, currentFaq, isEditing, errors, onChange, onSave }) => {
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+            <ModalContent>
+                <ModalHeader>{isEditing ? "Edit FAQ" : "Add New FAQ"}</ModalHeader>
+                <ModalBody>
+                    <Input
+                        key="question"
+                        className="w-full"
+                        variant="bordered"
+                        name="question"
+                        value={currentFaq?.question || ""}
+                        label="Question"
+                        type="text"
+                        isInvalid={!!errors.question}
+                        errorMessage={errors.question}
+                        onChange={(e) => onChange("question", e.target.value)}
+                    />
+                    <Textarea
+                        key="answer"
+                        className="w-full"
+                        variant="bordered"
+                        name="answer"
+                        value={currentFaq?.answer || ""}
+                        label="Answer"
+                        isInvalid={!!errors.answer}
+                        errorMessage={errors.answer}
+                        onChange={(e) => onChange("answer", e.target.value)}
+                    />
+                </ModalBody>
+                <ModalFooter>
+                    <Button variant="flat" color="danger" onPress={onClose}>
+                        Cancel
+                    </Button>
+                    <Button color="primary" onPress={onSave}>
+                        {isEditing ? "Update" : "Save"}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
+
+const FAQItem = ({ faq, onEdit, onDelete }) => {
+    return (
+        <Card className="shadow-sm transition-transform transform hover:scale-[1.02] hover:shadow-md">
+            <CardBody className="p-4">
+                <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                        <h3 className="font-medium text-lg mb-2">{faq.question}</h3>
+                        <p className="text-gray-600">{faq.answer}</p>
+                    </div>
+                    <Dropdown>
+                        <DropdownTrigger>
+                            <Button isIconOnly variant="light" size="sm">
+                                <MoreVertical size={16} />
+                            </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu aria-label="FAQ Actions">
+                            <DropdownItem
+                                startContent={<Pencil size={16} />}
+                                onPress={() => onEdit(faq)}
+                            >
+                                Edit
+                            </DropdownItem>
+                            <DropdownItem
+                                startContent={<Trash2 size={16} />}
+                                className="text-danger"
+                                color="danger"
+                                onPress={() => onDelete(faq.id)}
+                            >
+                                Delete
+                            </DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </div>
+            </CardBody>
+        </Card>
     );
 }
