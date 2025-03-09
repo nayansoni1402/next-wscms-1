@@ -12,6 +12,7 @@ import AlertWithAction from '@/wsui/Common/Alert/AlertWithAction';
 import { User } from '@heroui/react';
 import { formatDateMoment } from '@/lib/utils';
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
+import Loading from '@/ui/Loading';
 
 export default function Page() {
       const { pageId } = useParams();
@@ -45,7 +46,7 @@ export default function Page() {
       }
 
       if (loading) {
-            return <p className="text-gray-500">Loading...</p>;
+            return <Loading />;
       }
 
       const content = (
@@ -59,7 +60,7 @@ export default function Page() {
             </PopoverContent>
       );
 
-      
+
       return (
             <>
                   <div className="container p-0 pt-5 flex justify-between items-center">

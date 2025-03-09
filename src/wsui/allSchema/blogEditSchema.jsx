@@ -15,6 +15,7 @@ export const generalValidationSchema = z.object({
     image_alt: z.string().min(3, "Alt text must be at least 3 characters.").max(100, "Alt text cannot exceed 100 characters."),
     image: z.any().optional(),
     short_content: z.string().min(40, "Short content must be at least 40 characters.").max(200, "Short content cannot exceed 200 characters."),
+    tabId: z.string(),
 });
 
 
@@ -37,4 +38,8 @@ export const seoValidationSchema = z.object({
         .max(50, "Robots value cannot exceed 50 characters."),
 });
 
+export const faqSchema = z.object({
+    question: z.string().min(10, "Question must be at least 10 characters"),
+    answer: z.string().min(20, "Answer must be at least 20 characters"),
+});
 

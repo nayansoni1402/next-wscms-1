@@ -110,17 +110,20 @@ export default function FormRenderer({ config, initialData, onDataChange, zodSch
                     formData={formData}
                     onImageUpload={handleChange}
                 />;
-            case "textarea": return (<Textarea
-                className="max-w-xs"
-                value={formData[field.name] || ""}
-                defaultValue="Short content must be at least 40 characters."
-                errorMessage={errors[field.name]}
-                isInvalid={!!errors[field.name]}
-                name={field.name}
-                label="Description"
-                variant="bordered"
-                onChange={(e) => handleChange(field.name, e.target.value)}
-            />);
+            case "textarea": return (
+                <div className="w-full max-w-xl flex flex-row gap-4">
+                    <Textarea
+                        className="max-w-xs"
+                        value={formData[field.name] || ""}
+                        defaultValue="Short content must be at least 40 characters."
+                        errorMessage={errors[field.name]}
+                        isInvalid={!!errors[field.name]}
+                        name={field.name}
+                        label={field.label}
+                        variant="bordered"
+                        onChange={(e) => handleChange(field.name, e.target.value)}
+                    />
+                </div>);
             default:
                 return (
                     <Input

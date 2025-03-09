@@ -35,6 +35,7 @@ export default function General({ data }) {
   }
 
   return (
+
     <div className="w-full text-sm text-muted-foreground p-4 grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
       {/* Left Side: Blog Details & SEO Settings (Takes 2/3rd width) */}
       <div className="md:col-span-2 h-full overflow-y-auto pr-2">
@@ -44,6 +45,7 @@ export default function General({ data }) {
         <div className="mb-6">
           <h3 className="font-semibold mb-2">Blog Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="hidden" name="tabId" value={1} readOnly />
             <FormRenderer config={generalConfig} initialData={formData} onDataChange={handleDataChange} zodSchema={generalValidationSchema} />
           </div>
         </div>

@@ -7,9 +7,17 @@ export async function PATCH(req, { params }) {
             const { pageId } = params;
 
             const formData = await req.json();
-            const parsedGeneralData = generalValidationSchema.parse(formData);
-            const parsedSeoData = seoValidationSchema.parse(formData);
-            const parsedData = { ...parsedGeneralData, ...parsedSeoData };
+            let parsedData = {};
+
+            if (formData.tabId == 1) {
+                  parsedData = {
+                        ...generalValidationSchema.parse(formData),
+                        ...seoValidationSchema.parse(formData),
+                  };
+            } else if (formData.tabId == 3) {
+                  parsedData = formData;
+            }
+
             const formattedData = {
                   ...parsedData,
                   author_id: parsedData.author_id ? Number(parsedData.author_id) : undefined,
@@ -23,7 +31,7 @@ export async function PATCH(req, { params }) {
 
 
             const updateData = Object.fromEntries(
-                  Object.entries(formattedData).filter(([_, value]) => value !== "" && value !== null && value !== undefined)
+                  Object.entries(formattedData).filter(([key, value]) => value !== "" && value !== null && value !== undefined && key !== 'tabId')
             );
 
             const updatedBlog = await blogDb.blog.update({
@@ -48,10 +56,11 @@ export async function PATCH(req, { params }) {
 export async function GET(req, { params }) {
       try {
             const { pageId } = params;
-            console.log(pageId);
+            console.log("pageId------:", pageId);
+            console.log("pageId:", pageId);
 
             const blogs = await blogDb.blog.findUnique({
-                  where: { id: Number(pageId) }, // Convert pageId to a number if it's an integer ID
+                  where: { id: Number(pageId) },
             });
 
             if (!blogs) {

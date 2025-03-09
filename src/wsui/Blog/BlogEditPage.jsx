@@ -9,10 +9,11 @@ import Comments from './BlogTabs/Comments';
 import { Copy } from 'lucide-react';
 import { Button } from '@nextui-org/react';
 import FAQ from './BlogTabs/FAQ';
-import { generalValidationSchema, seoValidationSchema } from "../allSchema/blogEditSchema";
+import { faqSchema, generalValidationSchema, seoValidationSchema } from "../allSchema/blogEditSchema";
 import { fetchData } from "@/lib/apiCall";
 import { useParams } from "next/navigation";
 import { z } from "zod";
+import FAQManagement from "../Common/FAQManagement";
 
 export default function BlogEditPage({ data }) {
   const { pageId } = useParams();
@@ -24,13 +25,18 @@ export default function BlogEditPage({ data }) {
     setLoading(true);
     setErrors({});
     try {
-      // Validate form data
-      const parsedGeneralData = generalValidationSchema.parse(formData);
-      const parsedSeoData = seoValidationSchema.parse(formData);
+      let parsedData = {};
 
-      // Merge validated data
-      const parsedData = { ...parsedGeneralData, ...parsedSeoData };
+      if (formData.tabId == 1) {
+        parsedData = {
+          ...generalValidationSchema.parse(formData),
+          ...seoValidationSchema.parse(formData),
+        };
+      } else if (formData.tabId == 3) {
+        parsedData = formData;
+      }
       // Make API request
+      console.log("tabId:", parsedData);
       const response = await fetchData(`/blog-list/${pageId}`, 'PATCH', parsedData, false);
       if (!response) {
         throw new Error("No response from the server");
@@ -62,7 +68,7 @@ export default function BlogEditPage({ data }) {
   const tabs = [
     { key: "general", title: "General Detail", component: <General data={data} /> },
     { key: "description", title: "Description", component: <Description data={data} /> },
-    { key: "faq", title: "FAQ", component: <FAQ data={data} /> },
+    { key: "faq", title: "FAQ", component: <FAQManagement data={data} /> },
     { key: "comment", title: "Comments", component: <Comments data={data} /> },
   ];
 
@@ -101,7 +107,7 @@ export default function BlogEditPage({ data }) {
         }}
       >
         {/* Tabs Section */}
-        <div className="flex w-full flex-col">
+        <div className="flex w-full flex-col h-full">
           <Tabs
             aria-label="Options"
             isVertical
@@ -121,11 +127,18 @@ export default function BlogEditPage({ data }) {
               </Tab>
             ))}
           </Tabs>
+          <div className="mt-auto p-4 border-t bg-white">
+            <Button
+              variant="light"
+              startContent={<Copy size={20} />}
+              className="w-full justify-start text-gray-700 font-medium"
+            >
+              Copy Page
+            </Button>
+          </div>
+
         </div>
 
-        <Button variant="flat" startContent={<Copy size={20} />}>
-          Copy Page
-        </Button>
 
         {/* Submit & Cancel Buttons */}
         <div className="flex items-center gap-4 py-4">

@@ -4,17 +4,21 @@ import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic' // defaults to auto
 export async function GET(request) {
+    revalidatePath(`/api/v1/blog/blog-list/556`);
+    revalidatePath(`/blog/blog-list/556`);
+    return NextResponse.json("ehll");
+
     const searchParams = request.nextUrl.searchParams
     const path = searchParams.get('path');
 
-    if(path == "all"){
+    if (path == "all") {
         revalidatePath('/', 'layout');
-    }else{
+    } else {
         revalidatePath(path);
         let newPath = path.startsWith('/') ? path.substring(1) : path
-        redirect(`${process.env.NEXT_PUBLIC_APP_URL}${newPath}`);        
+        redirect(`${process.env.NEXT_PUBLIC_APP_URL}${newPath}`);
     }
 
     // const r = 
-    return NextResponse.json({path});
+    return NextResponse.json({ path });
 }
