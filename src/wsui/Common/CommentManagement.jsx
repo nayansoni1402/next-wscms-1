@@ -24,6 +24,7 @@ import {
     SelectItem,
 } from "@nextui-org/react"
 import { MoreVertical, MessageSquare, CheckCircle, XCircle, Trash2, Filter } from "lucide-react"
+import { fetchData } from "@/lib/apiCall";
 
 
 export default function CommentManagement({ data }) {
@@ -55,9 +56,9 @@ export default function CommentManagement({ data }) {
     }
 
     // Handle saving reply
-    const handleSaveReply = () => {
+    const handleSaveReply = async () => {
         if (!currentComment) return
-
+        await fetchData(`/comment/${currentComment.id}/update`, 'PATCH', { reply: replyText }, false);
         setComments(
             comments.map((comment) =>
                 comment.id === currentComment.id
@@ -70,7 +71,8 @@ export default function CommentManagement({ data }) {
     }
 
     // Handle updating comment status
-    const handleUpdateStatus = (id, status) => {
+    const handleUpdateStatus = async (id, status) => {
+        await fetchData(`/comment/${id}/update`, 'PATCH', { status }, false);
         setComments(
             comments.map((comment) =>
                 comment.id === id ? { ...comment, status, updated_at: new Date().toISOString() } : comment,
@@ -80,6 +82,7 @@ export default function CommentManagement({ data }) {
 
     // Handle deleting comment
     const handleDelete = (id) => {
+        return 0;
         setComments(comments.filter((comment) => comment.id !== id))
     }
 
@@ -180,7 +183,7 @@ export default function CommentManagement({ data }) {
                                                     <span className="font-medium">Phone:</span> {comment.phone}
                                                 </p>
                                             )}
-                                          
+
                                             <div className="mt-3 p-3 bg-gray-50 rounded-md">
                                                 <p className="text-gray-800">{comment.comment}</p>
                                             </div>
@@ -199,13 +202,13 @@ export default function CommentManagement({ data }) {
                                                 </Button>
                                             </DropdownTrigger>
                                             <DropdownMenu aria-label="Comment Actions">
-                                                <DropdownItem startContent={<MessageSquare size={16} />} onClick={() => handleReply(comment)}>
+                                                <DropdownItem startContent={<MessageSquare size={16} />} onPress={() => handleReply(comment)}>
                                                     {comment.reply ? "Edit Reply" : "Reply"}
                                                 </DropdownItem>
                                                 {comment.status !== 1 && (
                                                     <DropdownItem
                                                         startContent={<CheckCircle size={16} />}
-                                                        onClick={() => handleUpdateStatus(comment.id, 1)}
+                                                        onPress={() => handleUpdateStatus(comment.id, 1)}
                                                     >
                                                         Approve
                                                     </DropdownItem>
@@ -213,7 +216,7 @@ export default function CommentManagement({ data }) {
                                                 {comment.status !== 2 && (
                                                     <DropdownItem
                                                         startContent={<XCircle size={16} />}
-                                                        onClick={() => handleUpdateStatus(comment.id, 2)}
+                                                        onPress={() => handleUpdateStatus(comment.id, 2)}
                                                     >
                                                         Reject
                                                     </DropdownItem>
@@ -221,7 +224,7 @@ export default function CommentManagement({ data }) {
                                                 {comment.status !== 0 && (
                                                     <DropdownItem
                                                         startContent={<MessageSquare size={16} />}
-                                                        onClick={() => handleUpdateStatus(comment.id, 0)}
+                                                        onPress={() => handleUpdateStatus(comment.id, 0)}
                                                     >
                                                         Mark as Pending
                                                     </DropdownItem>
@@ -230,7 +233,7 @@ export default function CommentManagement({ data }) {
                                                     startContent={<Trash2 size={16} />}
                                                     className="text-danger"
                                                     color="danger"
-                                                    onClick={() => handleDelete(comment.id)}
+                                                    onPress={() => handleDelete(comment.id)}
                                                 >
                                                     Delete
                                                 </DropdownItem>
