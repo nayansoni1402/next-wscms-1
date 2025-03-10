@@ -5,7 +5,7 @@ import { Button } from "@heroui/react";
 import { Rotate3D } from "lucide-react";
 
 // Load Editor.js dynamically (avoiding SSR issues)
-const EditorJS = dynamic(() => import("@/wsui/Blog/BlogTabs/Editor"), { ssr: false });
+const EditorJS = dynamic(() => import("@/wsui/Blog/BlogTabs/EditorDemo"), { ssr: false });
 
 export default function Description({ data }) {
   const [oldDesc, setOldDesc] = useState(data?.description_old || "");
