@@ -19,7 +19,7 @@ export default function Description({ data }) {
       <div className="md:col-span-3">
         <div className="flex items-center gap-2 p-2">
           <p className="mb-4 font-semibold">
-            General: Blog Details & SEO Settings
+            Description: Blog Details Description
           </p>
           <Button
             onPress={handleConvert}
