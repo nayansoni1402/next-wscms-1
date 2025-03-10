@@ -20,9 +20,24 @@ import {
     DropdownMenu,
     DropdownItem,
 } from "@nextui-org/react"
-import { PlusIcon, Pencil, Trash2, MoreVertical } from "lucide-react"
+import { PlusIcon, Pencil, Trash2, MoreVertical, GripVertical } from "lucide-react"
 import { faqSchema } from "../allSchema/blogEditSchema"
-import FormRenderer from "../Blog/BlogTabs/FromRender"
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core"
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 export default function FAQManagement({ data }) {
 
@@ -31,7 +46,12 @@ export default function FAQManagement({ data }) {
     const [currentFaq, setCurrentFaq] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [errors, setErrors] = useState({});
-
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
+    )
     const handleChange = (name, value) => {
         setCurrentFaq((prev) => ({ ...prev, [name]: value }));
     };
@@ -79,7 +99,23 @@ export default function FAQManagement({ data }) {
         }
         onClose();
     };
+    const handleDragEnd = (event) => {
+        const { active, over } = event
 
+        if (over && active.id !== over.id) {
+            setFaqs((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id)
+                const newIndex = items.findIndex((item) => item.id === over.id)
+
+                // Update the order property for each item
+                const reordered = arrayMove(items, oldIndex, newIndex)
+                return reordered.map((item, index) => ({
+                    ...item,
+                    order: index,
+                }))
+            })
+        }
+    }
 
     return (
         <div className="w-full text-sm text-muted-foreground p-4 grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
@@ -103,14 +139,14 @@ export default function FAQManagement({ data }) {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {faqs.map((faq) => (
-                                    <FAQItem
-                                        key={faq.id}
-                                        faq={faq}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                    />
-                                ))}
+                                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                    <SortableContext items={faqs.map((faq) => faq.id)} strategy={verticalListSortingStrategy}>
+                                        {faqs.map((faq) => (
+                                            <SortableFAQItem key={faq.id} faq={faq} onEdit={handleEdit} onDelete={handleDelete} />
+                                        ))}
+                                    </SortableContext>
+                                </DndContext>
+
                             </div>
                         )}
                     </CardBody>
@@ -174,40 +210,57 @@ const FAQModal = ({ isOpen, onClose, currentFaq, isEditing, errors, onChange, on
     );
 }
 
-const FAQItem = ({ faq, onEdit, onDelete }) => {
+const SortableFAQItem = ({ faq, onEdit, onDelete }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: faq.id })
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 1 : 0,
+    }
     return (
-        <Card className="shadow-sm transition-transform transform hover:scale-[1.02] hover:shadow-md">
-            <CardBody className="p-4">
-                <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                        <h3 className="font-medium text-lg mb-2">{faq.question}</h3>
-                        <p className="text-gray-600">{faq.answer}</p>
+        <div ref={setNodeRef} style={style} className="relative">
+            <Card className="shadow-sm transition-transform hover:shadow-md">
+                <CardBody className="p-4">
+                    <div className="flex justify-between items-start">
+                        <div
+                            className="cursor-grab active:cursor-grabbing p-2 mr-2 text-gray-400 hover:text-gray-600 self-center"
+                            {...attributes}
+                            {...listeners}
+                        >
+                            <GripVertical size={20} />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="font-medium text-lg mb-2">{faq.question}</h3>
+                            <p className="text-gray-600">{faq.answer}</p>
+                        </div>
+                        <Dropdown>
+                            <DropdownTrigger>
+                                <Button isIconOnly variant="light" size="sm">
+                                    <MoreVertical size={16} />
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu aria-label="FAQ Actions">
+                                <DropdownItem
+                                    startContent={<Pencil size={16} />}
+                                    onPress={() => onEdit(faq)}
+                                >
+                                    Edit
+                                </DropdownItem>
+                                <DropdownItem
+                                    startContent={<Trash2 size={16} />}
+                                    className="text-danger"
+                                    color="danger"
+                                    onPress={() => onDelete(faq.id)}
+                                >
+                                    Delete
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
                     </div>
-                    <Dropdown>
-                        <DropdownTrigger>
-                            <Button isIconOnly variant="light" size="sm">
-                                <MoreVertical size={16} />
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu aria-label="FAQ Actions">
-                            <DropdownItem
-                                startContent={<Pencil size={16} />}
-                                onPress={() => onEdit(faq)}
-                            >
-                                Edit
-                            </DropdownItem>
-                            <DropdownItem
-                                startContent={<Trash2 size={16} />}
-                                className="text-danger"
-                                color="danger"
-                                onPress={() => onDelete(faq.id)}
-                            >
-                                Delete
-                            </DropdownItem>
-                        </DropdownMenu>
-                    </Dropdown>
-                </div>
-            </CardBody>
-        </Card>
+                </CardBody>
+            </Card>
+        </div>
     );
 }
