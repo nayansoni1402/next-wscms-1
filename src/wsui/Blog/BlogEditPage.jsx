@@ -14,6 +14,7 @@ import { fetchData } from "@/lib/apiCall";
 import { useParams } from "next/navigation";
 import { z } from "zod";
 import FAQManagement from "../Common/FAQManagement";
+import CommentManagement from "../Common/CommentManagement";
 
 export default function BlogEditPage({ data }) {
   const { pageId } = useParams();
@@ -69,7 +70,7 @@ export default function BlogEditPage({ data }) {
     { key: "general", title: "General Detail", component: <General data={data} /> },
     { key: "description", title: "Description", component: <Description data={data} /> },
     { key: "faq", title: "FAQ", component: <FAQManagement data={data} /> },
-    { key: "comment", title: "Comments", component: <Comments data={data} /> },
+    { key: "comment", title: "Comments", component: <CommentManagement data={data} /> },
   ];
 
 

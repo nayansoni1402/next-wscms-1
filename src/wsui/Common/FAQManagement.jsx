@@ -26,7 +26,7 @@ import FormRenderer from "../Blog/BlogTabs/FromRender"
 
 export default function FAQManagement({ data }) {
 
-    const [faqs, setFaqs] = useState(JSON.parse(data.faq));
+    const [faqs, setFaqs] = useState(JSON.parse(data?.faq));
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [currentFaq, setCurrentFaq] = useState(null);
     const [isEditing, setIsEditing] = useState(false);

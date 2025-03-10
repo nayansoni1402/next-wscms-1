@@ -61,6 +61,9 @@ export async function GET(req, { params }) {
 
             const blogs = await blogDb.blog.findUnique({
                   where: { id: Number(pageId) },
+                  include: {
+                        comments: true,
+                  },
             });
 
             if (!blogs) {
