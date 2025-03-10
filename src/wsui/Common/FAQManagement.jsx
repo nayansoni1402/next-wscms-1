@@ -40,8 +40,9 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 
 export default function FAQManagement({ data }) {
+    const initialFaqs = data?.faq ? JSON.parse(data.faq) : []
 
-    const [faqs, setFaqs] = useState(JSON.parse(data?.faq));
+    const [faqs, setFaqs] = useState(initialFaqs);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [currentFaq, setCurrentFaq] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
